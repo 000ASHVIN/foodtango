@@ -27,6 +27,14 @@ Route::group(['namespace' => 'Admin', 'as' => 'admin.'], function () {
         Route::get('export-account-transaction', 'AccountTransactionController@export_account_transaction')->name('export-account-transaction');
         Route::post('search-account-transaction', 'AccountTransactionController@search_account_transaction')->name('search-account-transaction');
 
+        Route::resource('payments-transaction', 'PaymentsRestarestaurantController')->middleware('module:payments');
+        Route::get('export-payments-transaction', 'PaymentsRestarestaurantController@export_payments_transaction')->name('export-payments-transaction');
+        Route::post('search-payments-transaction', 'PaymentsRestarestaurantController@search_payments_transaction')->name('search-payments-transaction');
+
+
+
+      
+
         Route::resource('provide-deliveryman-earnings', 'ProvideDMEarningController')->middleware('module:provide_dm_earning');
         Route::get('export-deliveryman-earnings', 'ProvideDMEarningController@dm_earning_list_export')->name('export-deliveryman-earning');
         Route::post('deliveryman-earnings-search', 'ProvideDMEarningController@search_deliveryman_earning')->name('search-deliveryman-earning');
