@@ -109,7 +109,7 @@ class LoginController extends Controller
                 } else {
                     return 'vendor';
                 }
-            }
+        }
         return false;
     }
 

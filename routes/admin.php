@@ -31,6 +31,8 @@ Route::group(['namespace' => 'Admin', 'as' => 'admin.'], function () {
         Route::get('export-payments-transaction', 'PaymentsRestarestaurantController@export_payments_transaction')->name('export-payments-transaction');
         Route::post('search-payments-transaction', 'PaymentsRestarestaurantController@search_payments_transaction')->name('search-payments-transaction');
 
+        Route::post('payments-transaction', 'PaymentsRestarestaurantController@confirmPayment')->name('payments-transaction.confirm');
+
 
 
       

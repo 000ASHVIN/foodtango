@@ -18,11 +18,11 @@
     .thead-light td{
       color:red;
     };
-    .checkbox-container {
+    .checkbox-container, .new-checkbox-container {
         position: relative;
         padding-left: 30px;
     }
-    .checkbox {
+    .checkbox, .new-checkbox {
         position: absolute;
         top: 0;
         left: 0;
@@ -30,7 +30,7 @@
         height: 20px;
         opacity: 0;
     }
-    .custom-checkbox {
+    .custom-checkbox, .new-custom-checkbox {
         top: 0;
         left: 0;
         width: 20px;
@@ -38,6 +38,9 @@
         background-color: #D9D9D9;
     }
     .checkbox:checked + .custom-checkbox {
+        background-color: black;
+    }
+    .new-checkbox:checked + .new-custom-checkbox {
         background-color: black;
     }
     .color{
@@ -130,8 +133,7 @@
     </div>
     <div class="card mb-3">
         <div class="card-body">
-            <form action="{{route('admin.account-transaction.store')}}" method='post' id="add_transaction">
-                @csrf
+            <form method='get' id="search_form">
                 <div class="row">
                     {{-- <div class="col-md-4">
                         <div class="form-group">
@@ -145,20 +147,23 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="input-label" for="restaurant">{{translate('messages.select restaurant')}}<span class="input-label-secondary"></span></label>
-                            <select id="restaurant" name="restaurant_id" data-placeholder="{{translate('messages.select restaurant')}}" onchange="getAccountData('{{url('/')}}/admin/restaurant/get-account-data/',this.value,'restaurant')" class="form-control h--48px" title="Select Restaurant">
+                            <select id="restaurant_id" name="restaurant_id" data-placeholder="{{translate('messages.select restaurant')}}" onchange="getAccountData('{{url('/')}}/admin/restaurant/get-account-data/',this.value,'restaurant')" class="form-control h--48px" title="Select Restaurant">
+                                @if (request()->has('restaurant_id') && !empty(request()->get('restaurant_id')) && $restaurant)
+                                    <option value="{{ request()->get('restaurant_id') }}" selected="selected">{{ $restaurant->name }}</option>
+                                @endif
                             </select>
                         </div>
                     </div>
                    <div class="col-md-4">
                         <div class="form-group">
                             <label class="input-label" for="start_date">{{ translate('messages.select start date') }}</label>
-                            <input class="form-control h--48px datepicker" type="text" name="start_date" id="start_date" maxlength="191" placeholder="{{ translate('Ex : Collect Cash') }}" autocomplete="off">
+                            <input class="form-control h--48px datepicker" type="text" name="start_date" id="start_date" maxlength="191" value="{{ request()->has('start_date') ? request()->get('start_date') : '' }}" placeholder="{{ translate('Ex : Collect Cash') }}" autocomplete="off">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="input-label" for="end_date">{{ translate('messages.select end date') }}</label>
-                            <input class="form-control h--48px datepicker" type="text" name="end_date" id="end_date" maxlength="191" placeholder="{{ translate('Ex : Collect Cash') }}" autocomplete="off">
+                            <input class="form-control h--48px datepicker" type="text" name="end_date" id="end_date" maxlength="191" value="{{ request()->has('end_date') ? request()->get('end_date') : '' }}" placeholder="{{ translate('Ex : Collect Cash') }}" autocomplete="off">
                         </div>
                     </div>
                         {{-- <div class="col-md-4">
@@ -174,19 +179,24 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="input-label" for="method">{{translate('messages.method')}}<span class="input-label-secondary"></span></label>
-                            <input class="form-control h--48px" type="text" name="method" id="method" required maxlength="191" placeholder="{{ translate('Ex : Cash') }}">
+                            <input class="form-control h--48px" type="text" name="method" id="method" value="{{ request()->has('method') ? request()->get('method') : '' }}" maxlength="191" placeholder="{{ translate('Ex : Cash') }}">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="input-label" for="ref">{{translate('messages.reference')}}<span class="input-label-secondary"></span></label>
-                            <input  class="form-control h--48px" type="text" name="ref" id="ref" maxlength="191" placeholder="{{ translate('Ex : Collect Cash') }}">
+                            <input  class="form-control h--48px" type="text" name="ref" id="ref" value="{{ request()->has('ref') ? request()->get('ref') : '' }}" maxlength="191" placeholder="{{ translate('Ex : Collect Cash') }}">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label class="input-label" for="amount">{{translate('messages.payment by')}}<span class="input-label-secondary" id="account_info"></span></label>
-                            <input class="form-control h--48px" type="number" min=".01" step="0.01" name="amount" id="amount" max="999999999999.99" placeholder="{{ translate('Ex : 100') }}">
+                            <label class="input-label" for="amount">{{translate('messages.payment by')}}<span class="input-label-secondary"></span></label>
+                            <select name="payment_by" id="payment_by" class="form-control h--48px select2">
+                                <option value="">Select Payment by</option>
+                                @foreach ($admins as $admin_user)
+                                    <option value="{{ $admin_user->id }}" {{ request()->has('payment_by') && request()->get('payment_by') == $admin_user->id ? 'selected' : '' }}>{{ $admin_user->f_name }} {{ $admin_user->l_name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -202,13 +212,14 @@
                     <button type="reset" id="reset_btn" class="btn btn--reset">{{translate('messages.reset')}}</button>
                     <button type="submit" class="btn btn--primary">{{translate('messages.collect')}} {{translate('messages.cash')}}</button>
                 </div> --}}
+                <div class="col-12 text-right">
+                    <button type="submit" class="btn btn-secondary">Get Orders</button>
+                </div>
             </form>
             <div class="">
-                <div class="card-header py-2 border-0">
+                {{-- <div class="card-header py-2 border-0">
                     <div class="search--button-wrapper">
                        <h3 class="card-title">
-                            {{-- <span>{{ translate('messages.transaction')}} {{ translate('messages.table')}}</span>
-                            <span class="badge badge-soft-secondary" id="itemCount" >{{$account_transaction->total()}}</span> --}}
                         </h3> 
                         <!-- Static Search Form -->
                         <form action="javascript:" id="search-form" class="my-2 ml-auto mr-sm-2 mr-xl-4 ml-sm-auto flex-grow-1 flex-grow-sm-0">
@@ -216,38 +227,39 @@
                                 <input id="datatableSearch_" type="search" name="search" class="form-control" placeholder="{{ translate('Search by Reference') }}" aria-label="Search" required="">
                                     <button type="submit" class="btn btn--secondary"><i class="tio-search"></i></button>
                             </div>
-                        <!-- End Search -->
                         </form>
-                        {{-- <div class="hs-unfold ml-3">
-                            <a class="js-hs-unfold-invoker btn btn-sm btn-white dropdown-toggle btn export-btn btn-outline-primary btn--primary font--sm" href="javascript:;"
-                                data-hs-unfold-options='{
-                                    "target": "#usersExportDropdown",
-                                    "type": "css-animation"
-                                }'>
-                                <i class="tio-download-to mr-1"></i> {{translate('messages.export')}}
-                            </a>
-        
-                            <div id="usersExportDropdown"
-                                    class="hs-unfold-content dropdown-unfold dropdown-menu dropdown-menu-sm-right">
-                                <span class="dropdown-header">{{translate('messages.download')}} {{translate('messages.options')}}</span>
-                                <a id="export-excel" class="dropdown-item" href="{{route('admin.export-account-transaction', ['type'=>'excel'])}}">
-                                    <img class="avatar avatar-xss avatar-4by3 mr-2"
-                                            src="{{asset('public/assets/admin')}}/svg/components/excel.svg"
-                                            alt="Image Description">
-                                    {{translate('messages.excel')}}
-                                </a>
-                                <a id="export-csv" class="dropdown-item" href="{{route('admin.export-account-transaction', ['type'=>'csv'])}}">
-                                    <img class="avatar avatar-xss avatar-4by3 mr-2"
-                                            src="{{asset('public/assets/admin')}}/svg/components/placeholder-csv-format.svg"
-                                            alt="Image Description">
-                                    .{{translate('messages.csv')}}
-                                </a>
-                            </div>
-                        </div> --}}
-                        <!-- Static Export Button -->
                     </div>
+                </div> --}}
+                <div>
+                    <hr>
+                        <div class="mt-3">
+                            <span class="span-color">Selected <span id="selectd-orders">0</span> Orders</span>
+                        </div>
+                        <div class="mt-3">
+                                <span class="span-color">Order total payment: </span>
+                               <span class="span-color" id="order-total">0</span>
+                        </div>
+                        <div class="mt-2">
+                                <span class="span-color">Total service fees: </span>
+                               <span class="span-color" id="order-fee">0</span>
+                        </div>
+                        <div class="btn-flex mt-3">
+                            <div class="">
+                                <span class="span-color">Payment to Restaurant: </span>
+                                <span class="span-color" id="pay-to-restaurant">0</span>
+                            </div>
+                            <div class="">
+                                <a href="{{ route('admin.payments-transaction.index') }}" class="btn btn--reset color">{{translate('messages.reset')}}</a>
+                                <button type="button" id="submit_btn" class="btn btn--reset color ml-3 mr-5">{{translate('messages.confirm payment:')}}</button>
+                            </div>
+                        </div>
+                        <hr>
                 </div>
                 <div class="card-body p-0">
+                    <div>
+                        <div class="alert alert-danger" id="error-message" style="display: none;"></div>
+                        <div class="alert alert-success" id="success-message" style="display: none;"></div>
+                    </div>
                     <div class="table-responsive">
                         <div class="table-container"style="overflow-x:auto;">
                             <table id="datatable"
@@ -256,66 +268,43 @@
                                 <tr class="thead-light">
                                     <th>
                                         <label class="checkbox-container">
-                                            <input type="checkbox" id="yourCheckboxId" name="yourCheckboxName" class="checkbox">
-                                            <div class="custom-checkbox"></div>
+                                            <input type="checkbox" id="check-all-orders" class="" data-checked="0">
+                                            {{-- <div class="new-custom-checkbox"></div> --}}
                                         </label>
                                     </th>
                                     <th>{{ translate('messages.order id') }}</th>
-                                    <th>{{ translate('messages.order totel') }}</th>
+                                    <th>{{ translate('messages.order total') }}</th>
                                     <th>{{translate('messages.service fee')}}</th>
                                     <th>{{translate('messages.date')}}</th>
                                     <th>{{translate('messages.order status')}}</th>
                                 </tr>
                             </thead>
                             <tbody id="set-rows" class="">
-                                @foreach($account_transaction as $k=>$at)
+                                @foreach($orders as $k=>$order)
                                     <tr class="thead-light">
                                         {{-- <td scope="row">{{$k+$account_transaction->firstItem()}}</td> --}}
                                         <th>
-                                            <label class="checkbox-container">
-                                                <input type="checkbox" id="yourCheckboxId" name="yourCheckboxName" class="checkbox">
-                                                <div class="custom-checkbox"></div>
+                                            <label class="new-checkbox-container">
+                                                <input type="checkbox" name="order[{{ $order->id }}]" class=" order-checkbox order-{{ $order->id }}" data-id="{{ $order->id }}" data-total="{{ $order->order_amount }}" data-fee="{{ $order->delivery_charge }}">
+                                                {{-- <div class="new-custom-checkbox"></div> --}}
                                             </label>
                                         </th>
                                         <td>
-                                        12345
+                                            {{ $order->id }}
                                         </td>
-                                        <td>240</td>
+                                        <td>{{ $order->order_amount }}</td>
                                         <td>
-                                            {{-- {{  Carbon\Carbon::parse($at->created_at)->locale(app()->getLocale())->translatedFormat('d M Y '.config('timeformat')) }} --}}
-                                            10
+                                            {{ $order->delivery_charge }}
                                         </td>
-                                        <td>12-08-2023</td> 
-                                        <td>Completed</td>
+                                        <td>{{  Carbon\Carbon::parse($order->created_at)->format('Y-m-d') }}</td> 
+                                        <td>{{ $order->order_status }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
                         </div>
-                        <hr>
-                        <div class="mt-3">
-                            <span class="span-color">Selected 0 Orders</span>
-                        </div>
-                        <div class="mt-3">
-                                <span class="span-color">Order total payment: </span>
-                               <span class="span-color">total of selected payments here</span>
-                        </div>
-                        <div class="mt-2">
-                                <span class="span-color">Total service fees: </span>
-                               <span class="span-color">total of services pay of selected orders</span>
-                        </div>
-                        <div class="btn-flex mt-3">
-                            <div class="">
-                                <span class="span-color">Payment to Restaurant: </span>
-                                <span class="span-color">Order total payment - Total service fees </span>
-                            </div>
-                            <div class="">
-                                <button type="reset" id="reset_btn" class="btn btn--reset color">{{translate('messages.reset')}}</button>
-                                <button type="reset" id="reset_btn" class="btn btn--reset color ml-3 mr-5">{{translate('messages.conform payment:')}}</button>
-                            </div>
-                        </div>
                         
-                        @if(count($account_transaction) === 0)
+                        @if(count($orders) === 0)
                         <div class="empty--data">
                             <img src="{{asset('/public/assets/admin/img/empty.png')}}" alt="public">
                             <h5>
@@ -478,13 +467,13 @@
 
     function getAccountData(route, data_id, type)
     {
-        $.get({
-                url: route+data_id,
-                dataType: 'json',
-                success: function (data) {
-                    $('#account_info').html('({{translate('messages.cash_in_hand')}}: '+data.cash_in_hand+' {{translate('messages.earning_balance')}}: '+data.earning_balance+')');
-                },
-            });
+        // $.get({
+        //         url: route+data_id,
+        //         dataType: 'json',
+        //         success: function (data) {
+        //             $('#account_info').html('({{translate('messages.cash_in_hand')}}: '+data.cash_in_hand+' {{translate('messages.earning_balance')}}: '+data.earning_balance+')');
+        //         },
+        //     });
     }
 </script>
 <script>
@@ -558,7 +547,7 @@
 </script>
 
 <!-- Include jQuery -->
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+{{-- <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script> --}}
 
 <!-- Include jQuery UI -->
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -566,12 +555,127 @@
 
 
 <script>
+    $.ajaxSetup({
+        headers: {
+          'X-CSRF-TOKEN': `{{ csrf_token() }}`
+        }
+    });
     $(document).ready(function () {
         // Initialize the datepicker
         $(".datepicker").datepicker({
             dateFormat: 'yy-mm-dd', // Set the desired date format
             autoclose: true,
         });
+
+        $('#check-all-orders').click(function(event) {
+            var isChecked = $(this).data('checked');
+            if(isChecked) {
+                $('.order-checkbox').prop('checked', false);
+                $(this).data('checked', 0);
+            } else {
+                $('.order-checkbox').prop('checked', true);
+                $(this).data('checked', 1);
+            }
+        })
+        $('input[type=checkbox]').click(function() {
+            var selectedCheckboxes = $('.order-checkbox:checked');
+            $('#selectd-orders').html(selectedCheckboxes.length)
+            var orderTotal = orderFee = 0;
+            selectedCheckboxes.each(function() {
+                var checkbox = $(this);
+                var id = checkbox.data('id');
+                var total = checkbox.data('total');
+                var fee = checkbox.data('fee');
+
+                orderTotal += total;
+                orderFee += fee;
+            });
+            $('#order-total').html(orderTotal)
+            $('#order-fee').html(orderFee)
+            
+            $('#pay-to-restaurant').html(orderTotal - orderFee)
+        })
+
+        $('#restaurant_id').select2({
+            ajax: {
+                url: '{{url('/')}}/admin/restaurant/get-restaurants',
+                data: function (params) {
+                    return {
+                        q: params.term, // search term
+                        page: params.page
+                    };
+                },
+                processResults: function (data) {
+                    return {
+                    results: data
+                    };
+                },
+                __port: function (params, success, failure) {
+                    var $request = $.ajax(params);
+
+                    $request.then(success);
+                    $request.fail(failure);
+
+                    return $request;
+                }
+            }
+        });
+
+        $('#submit_btn').click(function() {
+            var data = [];
+            var selectedCheckboxes = $('.order-checkbox:checked');
+            var selectedCheckboxArray = [];
+
+            selectedCheckboxes.each(function() {
+                var checkbox = $(this);
+                var id = checkbox.data('id');
+                selectedCheckboxArray.push(id);
+            });
+            $('#error-message').hide();
+            $('#success-message').hide();
+
+            let formData = {};
+            $.each($('#search_form').serializeArray(), function(i, field) {
+                formData[field.name] = field.value;
+            });
+
+            $.ajax({
+                url: "{{ route('admin.payments-transaction.confirm') }}",
+                method: "POST",
+                "_token": "{{ csrf_token() }}",
+                data: {
+                    order_ids: selectedCheckboxArray,
+                    form_data: formData
+                },
+                // beforeSend: function() {
+                //     me.attr('disabled', true);
+                //     me.html('<div class="spinner-border" role="status"><span class="sr-only">Loading...</span></div>');
+                // },
+                success: function(data) {
+                    if (data.status == 'success') {
+                        $('#success-message').show();
+                        $('#success-message').html('Payment done successfully')
+
+                        setTimeout(() => {
+                            $('#success-message').hide();
+                        }, 3000);
+                        window.location.reload();
+                    }
+                },        
+                error: function(error) {
+                    $('#error-message').show();
+                    $('#error-message').html(error.responseJSON.message)
+                    console.log('Something went wrong')
+                    setTimeout(() => {
+                        $('#error-message').hide();
+                    }, 3000);
+                },
+                // complete: function() {
+                //     me.attr('disabled', false);
+                //     me.html('Submit');
+                // }
+            });
+        })
     });
 </script>
 @endpush

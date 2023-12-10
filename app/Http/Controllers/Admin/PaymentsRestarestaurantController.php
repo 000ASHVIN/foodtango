@@ -4,7 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccountTransaction;
+use App\Models\Admin;
 use App\Models\Order;
+use App\Models\PaymentsToRestaurant;
+use App\Models\Restaurant;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class PaymentsRestarestaurantController extends Controller
@@ -106,7 +110,60 @@ class PaymentsRestarestaurantController extends Controller
         // $total = $orders->total();
 
         // dd( $account_transaction);
-        return view('admin-views.restarestaurant.index', compact('account_transaction'));
+        $admins = Admin::where('role_id', 1)->get();
+        $input = $request->all();
+        $orders = collect();
+        $restaurant = 0;
+        if(!empty($input)) {
+            $orders = Order::with(['customer', 'restaurant']);
+
+            if($request->has('restaurant_id') && !empty($input['restaurant_id'])) {
+                $orders = $orders->where('restaurant_id', $input['restaurant_id']);
+                $restaurant = Restaurant::find($input['restaurant_id']);
+            }
+            if($request->has('start_date') && !empty($input['start_date']) && $request->has('end_date') && !empty($input['end_date'])) {
+                $startDate = Carbon::parse($input['start_date']);
+                $endDate = Carbon::parse($input['end_date']);
+                $orders = $orders->whereBetween('created_at', [$startDate, $endDate]);
+            }
+            if($request->has('method') && !empty($input['method'])) {
+                $orders = $orders->where('payment_method', 'LIKE', '%'.$input['method'].'%');
+            }
+
+            if($request->has('ref') && !empty($input['ref'])) {
+                $orders = $orders->where('transaction_reference', 'LIKE', '%'.$input['ref'].'%');
+            }
+            
+            if($request->has('payment_by') && !empty($input['payment_by'])) {
+                // $orders = $orders->where('payment_by', 'LIKE', '%'.$input['payment_by'].'%');
+            }
+            $orders = $orders->get();
+        }
+        return view('admin-views.restarestaurant.index', compact('account_transaction', 'admins', 'orders', 'restaurant'));
     }
 
+    public function confirmPayment(Request $request) {
+        $this->validate($request, [
+            'order_ids' => 'required'
+        ], ['order_ids' => 'Please select orders.']);
+        $data['orders'] = json_encode($request->order_ids);
+        $data = array_merge($data, $request->form_data);
+        $orders = Order::whereIn('id', $request->order_ids)->get();
+        $orderTotal = $orderFee = 0;
+        foreach($orders as $order) {
+            $orderTotal += $order->order_amount;
+            $orderFee += $order->delivery_charge;
+        }
+        
+        $data['total_order_payment'] = $orderTotal;
+        $data['total_service_fees'] = $orderFee;
+
+        $data['total_payment'] = $orderTotal - $orderFee;
+        $data['reference'] = $data['ref'];
+        unset($data['restaurant_id']);
+        unset($data['ref']);
+        // dd($data);
+        $record = PaymentsToRestaurant::create($data);
+        return response()->json(['status' => 'success']);
+    }
 }
