@@ -1,6 +1,6 @@
 @extends('layouts.admin.app')
 
-@section('title',translate('messages.account_transaction'))
+@section('title',translate('messages.Payment to Restaurant'))
 
 @push('css_or_js')
 <style>
@@ -70,6 +70,9 @@
         font-size: 13px;
         font-weight: 500;
     }
+    .margin-right{
+        margin-right: 70px;
+    }
     /* .layouts-thead{
         width: 50px;
         height: 15px;
@@ -127,7 +130,7 @@
                 <img src="{{asset('/public/assets/admin/img/collect-cash.png')}}" class="w-20px" alt="public">
             </div>
             <span>
-                {{ translate('Cash Collection Transaction') }}
+                {{ translate('Restuant Payments') }}
             </span>
         </h1>
     </div>
@@ -157,13 +160,13 @@
                    <div class="col-md-4">
                         <div class="form-group">
                             <label class="input-label" for="start_date">{{ translate('messages.select start date') }}</label>
-                            <input class="form-control h--48px datepicker" type="text" name="start_date" id="start_date" maxlength="191" value="{{ request()->has('start_date') ? request()->get('start_date') : '' }}" placeholder="{{ translate('Ex : Collect Cash') }}" autocomplete="off">
+                            <input class="form-control h--48px datepicker" type="text" name="start_date" id="start_date" maxlength="191" value="{{ request()->has('start_date') ? request()->get('start_date') : '' }}" placeholder="{{ translate('Ex : 2023-2-20') }}" autocomplete="off">
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label class="input-label" for="end_date">{{ translate('messages.select end date') }}</label>
-                            <input class="form-control h--48px datepicker" type="text" name="end_date" id="end_date" maxlength="191" value="{{ request()->has('end_date') ? request()->get('end_date') : '' }}" placeholder="{{ translate('Ex : Collect Cash') }}" autocomplete="off">
+                            <input class="form-control h--48px datepicker" type="text" name="end_date" id="end_date" maxlength="191" value="{{ request()->has('end_date') ? request()->get('end_date') : '' }}" placeholder="{{ translate('Ex : 2024-12-20') }}" autocomplete="off">
                         </div>
                     </div>
                         {{-- <div class="col-md-4">
@@ -243,15 +246,17 @@
                                 <span class="span-color">Total service fees: </span>
                                <span class="span-color" id="order-fee">0</span>
                         </div>
-                        <div class="btn-flex mt-3">
-                            <div class="">
-                                <span class="span-color">Payment to Restaurant: </span>
-                                <span class="span-color" id="pay-to-restaurant">0</span>
+                        <div class="mt-3">
+                            <span class="span-color">Payment to Restaurant: </span>
+                            <span class="span-color" id="pay-to-restaurant">0</span>
+                            <div class="col-12 text-right">
+                              <a href="{{ route('admin.payments-transaction.index') }}"> <button type="submit" class="btn btn-secondary mr-1">{{translate('messages.reset')}}</button></a>
+                              <a href=""><button type="button" id="submit_btn" class="btn btn-secondary margin-right">{{translate('messages.conform payment:')}}</button></a>
                             </div>
-                            <div class="">
+                            {{-- <div class="">
                                 <a href="{{ route('admin.payments-transaction.index') }}" class="btn btn--reset color">{{translate('messages.reset')}}</a>
                                 <button type="button" id="submit_btn" class="btn btn--reset color ml-3 mr-5">{{translate('messages.confirm payment:')}}</button>
-                            </div>
+                            </div> --}}
                         </div>
                         <hr>
                 </div>
@@ -272,35 +277,40 @@
                                             {{-- <div class="new-custom-checkbox"></div> --}}
                                         </label>
                                     </th>
-                                    <th>{{ translate('messages.order id') }}</th>
+                                    <th>{{ translate('messages.Order id') }}</th>
                                     <th>{{ translate('messages.order total') }}</th>
-                                    <th>{{translate('messages.service fee')}}</th>
+                                    <th>{{ translate('messages.order commission') }}</th>
+                                    <th>{{ translate('messages.Your payment') }}</th>
+                                    {{-- <th>{{translate('messages.service fee')}}</th> --}}
                                     <th>{{translate('messages.date')}}</th>
                                     <th>{{translate('messages.order status')}}</th>
                                 </tr>
                             </thead>
                             <tbody id="set-rows" class="">
-                                @foreach($orders as $k=>$order)
-                                    <tr class="thead-light">
-                                        {{-- <td scope="row">{{$k+$account_transaction->firstItem()}}</td> --}}
-                                        <th>
-                                            <label class="new-checkbox-container">
-                                                <input type="checkbox" name="order[{{ $order->id }}]" class=" order-checkbox order-{{ $order->id }}" data-id="{{ $order->id }}" data-total="{{ $order->order_amount }}" data-fee="{{ $order->delivery_charge }}">
-                                                {{-- <div class="new-custom-checkbox"></div> --}}
-                                            </label>
-                                        </th>
-                                        <td>
-                                            {{ $order->id }}
-                                        </td>
-                                        <td>{{ $order->order_amount }}</td>
-                                        <td>
-                                            {{ $order->delivery_charge }}
-                                        </td>
-                                        <td>{{  Carbon\Carbon::parse($order->created_at)->format('Y-m-d') }}</td> 
-                                        <td>{{ $order->order_status }}</td>
-                                    </tr>
+                                @foreach($orders as $k => $order)
+                                    @if ($order->payment_to_restaurant == 0)
+                                        <tr class="thead-light">
+                                            {{-- Your existing code --}}
+                                            <th>
+                                                <label class="new-checkbox-container">
+                                                    <input type="checkbox" name="order[{{ $order->id }}]" class="order-checkbox order-{{ $order->id }}" data-id="{{ $order->id }}" data-total="{{ $order->order_amount }}" data-fee="{{ $order->delivery_charge }}">
+                                                </label>
+                                            </th>
+                                            <td>
+                                                <a href="{{ route('admin.order.details', ['id' => $order->id]) }}">{{ $order->id }}</a>
+                                            </td>
+                                            <td>{{ $order->order_amount }}</td>
+                                            <td>{{ $order->order_amount * 0.12 }}</td>
+                                            <td>{{ $order->order_amount - ($order->order_amount * 0.12) }}</td>
+                                            {{-- <td>{{ $order->delivery_charge }}</td> --}}
+                                            <td>{{ Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}</td>
+                                            <td>{{ $order->order_status }}</td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                             </tbody>
+                            
+                            
                         </table>
                         </div>
                         
@@ -591,9 +601,10 @@
                 orderFee += fee;
             });
             $('#order-total').html(orderTotal)
-            $('#order-fee').html(orderFee)
-            
-            $('#pay-to-restaurant').html(orderTotal - orderFee)
+            var orderTotal12Percent = orderTotal * 0.12;
+            $('#pay-to-restaurant').html(orderTotal12Percent);
+            var orderTotalAfterDiscount = orderTotal - (orderTotal * 0.12);
+             $('#order-fee').html(orderTotalAfterDiscount);
         })
 
         $('#restaurant_id').select2({

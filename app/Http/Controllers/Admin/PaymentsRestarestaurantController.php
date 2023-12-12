@@ -112,6 +112,7 @@ class PaymentsRestarestaurantController extends Controller
         // dd( $account_transaction);
         $admins = Admin::where('role_id', 1)->get();
         $input = $request->all();
+        $payment_to_restaurant = Order::where('payment_to_restaurant', 0)->get();
         $orders = collect();
         $restaurant = 0;
         if(!empty($input)) {
@@ -139,7 +140,7 @@ class PaymentsRestarestaurantController extends Controller
             }
             $orders = $orders->get();
         }
-        return view('admin-views.restarestaurant.index', compact('account_transaction', 'admins', 'orders', 'restaurant'));
+        return view('admin-views.restarestaurant.index', compact('account_transaction', 'admins', 'orders', 'restaurant','payment_to_restaurant'));
     }
 
     public function confirmPayment(Request $request) {
@@ -152,9 +153,15 @@ class PaymentsRestarestaurantController extends Controller
         $orderTotal = $orderFee = 0;
         foreach($orders as $order) {
             $orderTotal += $order->order_amount;
-            $orderFee += $order->delivery_charge;
+            // $orderFee += $order->delivery_charge;
+            $orderFee += $order->order_amount * 0.12;
+            $payment_to_restaurant = Order::find($order->id);
+
+            if ($payment_to_restaurant) {
+                $payment_to_restaurant->payment_to_restaurant = 1;
+                $payment_to_restaurant->save();
+            }
         }
-        
         $data['total_order_payment'] = $orderTotal;
         $data['total_service_fees'] = $orderFee;
 
