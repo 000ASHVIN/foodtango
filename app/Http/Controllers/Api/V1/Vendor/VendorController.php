@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Mail;
 use App\CentralLogics\RestaurantLogic;
+use App\Models\Category;
 use App\Models\Restaurant;
 use App\Models\RestaurantSubscription;
 use Illuminate\Support\Facades\Config;
@@ -568,14 +569,35 @@ class VendorController extends Controller
         $type = $request->query('type', 'all');
 
         $paginator = Food::type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->latest()->paginate($limit, ['*'], 'page', $offset);
-        $data = [
+
+        $categories = Category::pluck('name', 'id');
+        $productsByCategory = [];
+
+        foreach ($paginator->items() as $product) {
+            $categoryId = $product->category_id;
+            $product->category_name = '';
+
+            if(!isset($productsByCategory[$categoryId])) {
+                $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
+                $productsByCategory[$categoryId] = $category;
+            }
+            $productsByCategory[$categoryId]['products'][] = $product;
+            // dd($productsByCategory);
+        }
+        return [
             'total_size' => $paginator->total(),
             'limit' => $limit,
             'offset' => $offset,
-            'products' => Helpers::product_data_formatting(data:$paginator->items(), multi_data: true, trans:true, local:app()->getLocale())
+            'products' => $productsByCategory
         ];
+        // $data = [
+        //     'total_size' => $paginator->total(),
+        //     'limit' => $limit,
+        //     'offset' => $offset,
+        //     'products' => Helpers::product_data_formatting(data:$paginator->items(), multi_data: true, trans:true, local:app()->getLocale())
+        // ];
 
-        return response()->json($data, 200);
+        // return response()->json($data, 200);
     }
 
     public function update_bank_info(Request $request)

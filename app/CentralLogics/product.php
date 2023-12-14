@@ -37,11 +37,15 @@ class ProductLogic
             $categoryId = $product->category_id;
             $product->category_name = '';
 
-            if (!isset($productsByCategory[$categoryId])) {
-                $product->category_name = $categories[$categoryId];
-                $productsByCategory[$categoryId] = [];
+            if(!isset($productsByCategory[$categoryId])) {
+                $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
+                $productsByCategory[$categoryId] = $category;
             }
-            $productsByCategory[$categoryId][] = $product;
+            // if (!isset($productsByCategory[$categoryId])) {
+            //     $product->category_name = $categories[$categoryId];
+            //     $productsByCategory[$categoryId] = [];
+            // }
+            $productsByCategory[$categoryId]['products'][] = $product;
             // dd($productsByCategory);
         }
         return [

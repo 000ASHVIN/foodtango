@@ -102,52 +102,105 @@ class Helpers
         if ($multi_data == true) {
             foreach ($data as $item) {
                 $variations = [];
-                if ($item->title) {
+                // if ($item->title) {
+                //     $item['name'] = $item->title;
+                //     unset($item['title']);
+                // }
+                if (isset($item->title)) {
                     $item['name'] = $item->title;
                     unset($item['title']);
                 }
-                if ($item->start_time) {
+                if (isset($item->start_time) && is_object($item->start_time)) {
                     $item['available_time_starts'] = $item->start_time->format('H:i');
                     unset($item['start_time']);
                 }
-                if ($item->end_time) {
+                
+                // if ($item->start_time) {
+                //     $item['available_time_starts'] = $item->start_time->format('H:i');
+                //     unset($item['start_time']);
+                // }
+                if (isset($item->end_time) && is_object($item->end_time)) {
                     $item['available_time_ends'] = $item->end_time->format('H:i');
                     unset($item['end_time']);
                 }
-
-                if ($item->start_date) {
+                
+                // if ($item->end_time) {
+                //     $item['available_time_ends'] = $item->end_time->format('H:i');
+                //     unset($item['end_time']);
+                // }
+                if (isset($item->start_date) && is_object($item->start_date)) {
                     $item['available_date_starts'] = $item->start_date->format('Y-m-d');
                     unset($item['start_date']);
                 }
-                if ($item->end_date) {
+                
+                // if ($item->start_date) {
+                //     $item['available_date_starts'] = $item->start_date->format('Y-m-d');
+                //     unset($item['start_date']);
+                // }
+                if (isset($item->end_date) && is_object($item->end_date)) {
                     $item['available_date_ends'] = $item->end_date->format('Y-m-d');
                     unset($item['end_date']);
                 }
-                $item['recommended'] =(int) $item->recommended;
+                
+                // if ($item->end_date) {
+                //     $item['available_date_ends'] = $item->end_date->format('Y-m-d');
+                //     unset($item['end_date']);
+                // }
+                $item['recommended'] = isset($item['recommended']) ? (int) $item['recommended'] : 0;
+                // $item['recommended'] =(int) $item->recommended;
                 $categories = [];
-                foreach (json_decode($item?->category_ids) as $value) {
-                    $categories[] = ['id' => (string)$value->id, 'position' => $value->position];
+                if (isset($item['category_ids'])) {
+                    $decodedCategoryIds = json_decode($item['category_ids']);
+                    if (is_array($decodedCategoryIds)) {
+                        foreach ($decodedCategoryIds as $value) {
+                            $categories[] = ['id' => (string) $value->id, 'position' => $value->position];
+                        }
+                    }
                 }
+
+                // $categories = [];
+                // foreach (json_decode($item?->category_ids) as $value) {
+                //     $categories[] = ['id' => (string)$value->id, 'position' => $value->position];
+                // }
                 $item['category_ids'] = $categories;
                 // $item['attributes'] = json_decode($item['attributes']);
                 // $item['choice_options'] = json_decode($item['choice_options']);
-                $item['add_ons'] = self::addon_data_formatting(AddOn::whereIn('id', json_decode($item['add_ons']))->active()->get(), true, $trans, $local);
-                $item['tags'] = $item->tags;
-                $item['variations'] = json_decode($item['variations'], true);
-                $item['restaurant_name'] = $item->restaurant->name;
-                $item['restaurant_status'] = (int) $item->restaurant->status;
-                $item['restaurant_discount'] = self::get_restaurant_discount($item->restaurant) ? $item->restaurant->discount->discount : 0;
-                $item['restaurant_opening_time'] = $item->restaurant->opening_time ? $item->restaurant->opening_time->format('H:i') : null;
-                $item['restaurant_closing_time'] = $item->restaurant->closeing_time ? $item->restaurant->closeing_time->format('H:i') : null;
-                $item['schedule_order'] = $item->restaurant->schedule_order;
-                $item['tax'] = $item->restaurant->tax;
-                $item['rating_count'] = (int)($item->rating ? array_sum(json_decode($item->rating, true)) : 0);
-                $item['avg_rating'] = (float)($item->avg_rating ? $item->avg_rating : 0);
-                $item['free_delivery'] =  (int) $item->restaurant->free_delivery ?? 0;
-                $item['min_delivery_time'] =  (int) explode('-',$item->restaurant->delivery_time)[0] ?? 0;
-                $item['max_delivery_time'] =  (int) explode('-',$item->restaurant->delivery_time)[1] ?? 0;
+                $item['restaurant_name'] = isset($item['restaurant']['name']) ? $item['restaurant']['name'] : null;
+                // $item['add_ons'] = self::addon_data_formatting(AddOn::whereIn('id', json_decode($item['add_ons']))->active()->get(), true, $trans, $local);
+                $item['tags'] = isset($item['tags']) ? $item['tags'] : null;
+                // $item['tags'] = $item->tags;
+                $item['variations'] = isset($item['variations']) ? json_decode($item['variations'], true) : null;
+                // $item['variations'] = json_decode($item['variations'], true);
+                $item['restaurant_name'] = isset($item['restaurant']['name']) ? $item['restaurant']['name'] : null;
+                // $item['restaurant_name'] = $item->restaurant->name;
+                $item['restaurant_status'] = isset($item['restaurant']['status']) ? (int) $item['restaurant']['status'] : 0;
+                // $item['restaurant_status'] = (int) $item->restaurant->status;
+                $item['restaurant_discount'] = isset($item['restaurant']['discount']['discount']) ? self::get_restaurant_discount($item['restaurant']) : 0;
+                // $item['restaurant_discount'] = self::get_restaurant_discount($item->restaurant) ? $item->restaurant->discount->discount : 0;
+                $item['restaurant_opening_time'] = isset($item['restaurant']['opening_time']) ? $item['restaurant']['opening_time']->format('H:i') : null;
+                // $item['restaurant_opening_time'] = $item->restaurant->opening_time ? $item->restaurant->opening_time->format('H:i') : null;
+                $item['restaurant_closing_time'] = isset($item['restaurant']['closing_time']) ? $item['restaurant']['closing_time']->format('H:i') : null;
+                // $item['restaurant_closing_time'] = $item->restaurant->closeing_time ? $item->restaurant->closeing_time->format('H:i') : null;
+                $item['schedule_order'] = isset($item['restaurant']['schedule_order']) ? $item['restaurant']['schedule_order'] : null;
+                // $item['schedule_order'] = $item->restaurant->schedule_order;
+                $item['tax'] = isset($item['restaurant']['tax']) ? $item['restaurant']['tax'] : null;
+                // $item['tax'] = $item->restaurant->tax;
+                $item['rating_count'] = isset($item['rating']) ? (int) array_sum(json_decode($item['rating'], true)) : 0;
+                // $item['rating_count'] = (int)($item->rating ? array_sum(json_decode($item->rating, true)) : 0);
+                $item['avg_rating'] = isset($item['avg_rating']) ? (float) $item['avg_rating'] : 0;
+                // $item['avg_rating'] = (float)($item->avg_rating ? $item->avg_rating : 0);
+                $item['free_delivery'] = isset($item['restaurant']['free_delivery']) ? (int) $item['restaurant']['free_delivery'] : 0;
+                // $item['free_delivery'] =  (int) $item->restaurant->free_delivery ?? 0;
+                $deliveryTimeArray = isset($item['restaurant']['delivery_time']) ? explode('-', $item['restaurant']['delivery_time']) : [];
+                $item['min_delivery_time'] = isset($deliveryTimeArray[0]) ? (int) $deliveryTimeArray[0] : 0;
+                // $item['min_delivery_time'] =  (int) explode('-',$item->restaurant->delivery_time)[0] ?? 0;
+                $deliveryTimeArray = isset($item['restaurant']['delivery_time']) ? explode('-', $item['restaurant']['delivery_time']) : [];
+                $item['max_delivery_time'] = isset($deliveryTimeArray[1]) ? (int) $deliveryTimeArray[1] : 0;
+
+                // $item['max_delivery_time'] =  (int) explode('-',$item->restaurant->delivery_time)[1] ?? 0;
                 $cuisine =[];
-                $cui =$item->restaurant->load('cuisine');
+                $cui = isset($item['restaurant']) ? $item['restaurant']->load('cuisine') : null;
+                // $cui =$item->restaurant->load('cuisine');
                 if(isset($cui->cuisine)){
                     foreach($cui->cuisine as $cu){
                         $cuisine[]= ['id' => (int) $cu->id, 'name' => $cu->name , 'image' => $cu->image];

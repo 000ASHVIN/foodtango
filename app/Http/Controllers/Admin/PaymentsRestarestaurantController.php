@@ -116,8 +116,8 @@ class PaymentsRestarestaurantController extends Controller
         $orders = collect();
         $restaurant = 0;
         if(!empty($input)) {
-            $orders = Order::with(['customer', 'restaurant']);
-
+            $orders = Order::with(['customer', 'restaurant'])->where('payment_to_restaurant', 0);
+            // dd($orders->get());
             if($request->has('restaurant_id') && !empty($input['restaurant_id'])) {
                 $orders = $orders->where('restaurant_id', $input['restaurant_id']);
                 $restaurant = Restaurant::find($input['restaurant_id']);
@@ -138,7 +138,7 @@ class PaymentsRestarestaurantController extends Controller
             if($request->has('payment_by') && !empty($input['payment_by'])) {
                 // $orders = $orders->where('payment_by', 'LIKE', '%'.$input['payment_by'].'%');
             }
-            $orders = $orders->where('payment_to_restaurant', 0)->get();
+            $orders = $orders->get();
         }
         return view('admin-views.restarestaurant.index', compact('account_transaction', 'admins', 'orders', 'restaurant','payment_to_restaurant'));
     }

@@ -289,8 +289,20 @@
                             <span class="span-color">Order total payment: </span>
                             <span class="span-color" id="order-total">0</span>
                         </div>
+                        {{-- <dt class="col-6">{{ translate('messages.subtotal') }}
+                            @if ($order->tax_status == 'included' ||  $tax_included ==  1)
+                            ({{ translate('messages.TAX_Included') }})
+                            @endif
+                                :</dt>
+                            <dd class="col-6 text-right">
+                                {{ \App\CentralLogics\Helpers::format_currency($product_price + $total_addon_price) }}
+                            </dd>
+                            <dt class="col-6">{{ translate('messages.discount') }}:</dt>
+                            <dd class="col-6 text-right">
+                                - {{ \App\CentralLogics\Helpers::format_currency($restaurant_discount_amount) }}
+                            </dd> --}}
                         <div class="mt-2">
-                            <span class="span-color">Total service fees: </span>
+                            <span class="span-color">Total commission fees: </span>
                             <span class="span-color" id="order-fee">0</span>
                         </div>
                         <div class="mt-3">
@@ -354,8 +366,8 @@
                                                             <a href="{{ route('admin.order.details', ['id' => $order->id]) }}">{{ $order->id }}</a>
                                                         </td>
                                                         <td>{{ $order->order_amount }}</td>
-                                                        <td>{{ $order->order_amount * 0.12 }}</td>
-                                                        <td>{{ $order->order_amount - $order->order_amount * 0.12 }}</td>
+                                                        <td>{{ round($order->order_amount * 0.12) }}</td>
+                                                        <td>{{ round($order->order_amount - $order->order_amount * 0.12) }}</td>
                                                         {{-- <td>{{ $order->delivery_charge }}</td> --}}
                                                         <td>{{ Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}
                                                         </td>
@@ -654,11 +666,17 @@
                     orderTotal += total;
                     orderFee += fee;
                 });
-                $('#order-total').html(orderTotal)
-                var orderTotal12Percent = orderTotal * 0.12;
-                $('#pay-to-restaurant').html(orderTotal12Percent);
-                var orderTotalAfterDiscount = orderTotal - (orderTotal * 0.12);
-                $('#order-fee').html(orderTotalAfterDiscount);
+                $('#order-total').html(Math.round(orderTotal));
+                var orderTotal12Percent = orderTotal - (orderTotal * 0.12);
+                $('#pay-to-restaurant').html(Math.round(orderTotal12Percent));
+                var orderTotalAfterDiscount = orderTotal * 0.12;
+                $('#order-fee').html(Math.round(orderTotalAfterDiscount));
+
+                // $('#order-total').html(orderTotal)
+                // var orderTotal12Percent = orderTotal * 0.12;
+                // $('#pay-to-restaurant').html(orderTotal12Percent);
+                // var orderTotalAfterDiscount = orderTotal - (orderTotal * 0.12);
+                // $('#order-fee').html(orderTotalAfterDiscount);
             })
 
             $('#restaurant_id').select2({
