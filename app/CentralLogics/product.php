@@ -2,7 +2,6 @@
 
 namespace App\CentralLogics;
 
-use App\Models\Category;
 use App\Models\Food;
 use App\Models\Review;
 
@@ -30,29 +29,10 @@ class ProductLogic
         }
         $paginator = $paginator->where('restaurant_id', $restaurant_id)->latest()->paginate($limit, ['*'], 'page', $offset);
 
-        $categories = Category::pluck('name', 'id');
-        $productsByCategory = [];
-
-        foreach ($paginator->items() as $product) {
-            $categoryId = $product->category_id;
-            $product->category_name = '';
-
-            if(!isset($productsByCategory[$categoryId])) {
-                $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
-                $productsByCategory[$categoryId] = $category;
-            }
-            // if (!isset($productsByCategory[$categoryId])) {
-            //     $product->category_name = $categories[$categoryId];
-            //     $productsByCategory[$categoryId] = [];
-            // }
-            $productsByCategory[$categoryId]['products'][] = $product;
-            // dd($productsByCategory);
-        }
         return [
             'total_size' => $paginator->total(),
             'limit' => $limit,
             'offset' => $offset,
-            // 'products' => $productsByCategory
             'products' => $paginator->items()
         ];
     }
