@@ -584,20 +584,20 @@ class VendorController extends Controller
             $productsByCategory[$categoryId]['products'][] = $product;
             // dd($productsByCategory);
         }
-        return [
-            'total_size' => $paginator->total(),
-            'limit' => $limit,
-            'offset' => $offset,
-            'products' => $productsByCategory
-        ];
-        // $data = [
+        // return [
         //     'total_size' => $paginator->total(),
         //     'limit' => $limit,
         //     'offset' => $offset,
-        //     'products' => Helpers::product_data_formatting(data:$paginator->items(), multi_data: true, trans:true, local:app()->getLocale())
+        //     'products' => $productsByCategory
         // ];
+        $data = [
+            'total_size' => $paginator->total(),
+            'limit' => $limit,
+            'offset' => $offset,
+            'products' => Helpers::product_data_formatting(data:$paginator->items(), multi_data: true, trans:true, local:app()->getLocale())
+        ];
 
-        // return response()->json($data, 200);
+        return response()->json($data, 200);
     }
 
     public function update_bank_info(Request $request)

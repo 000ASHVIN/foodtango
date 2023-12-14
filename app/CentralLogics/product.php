@@ -52,7 +52,8 @@ class ProductLogic
             'total_size' => $paginator->total(),
             'limit' => $limit,
             'offset' => $offset,
-            'products' => $productsByCategory
+            // 'products' => $productsByCategory
+            'products' => $paginator->items()
         ];
     }
 
