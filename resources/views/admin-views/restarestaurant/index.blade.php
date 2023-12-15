@@ -358,17 +358,17 @@
                                                                 <input type="checkbox" name="order[{{ $order->id }}]"
                                                                     class="order-checkbox order-{{ $order->id }}"
                                                                     data-id="{{ $order->id }}"
-                                                                    data-total="{{ $order->order_amount }}"
+                                                                    data-total="{{ $order->order_amount - $order->restaurant_discount_amount}}"
                                                                     data-fee="{{ $order->delivery_charge }}">
                                                             </label>
                                                         </th>
                                                         <td>
                                                             <a href="{{ route('admin.order.details', ['id' => $order->id]) }}">{{ $order->id }}</a>
                                                         </td>
-                                                        <td>{{ $order->order_amount }}</td>
-                                                        <td>{{ round($order->order_amount * 0.12) }}</td>
-                                                        <td>{{ round($order->order_amount - $order->order_amount * 0.12) }}</td>
-                                                        {{-- <td>{{ $order->delivery_charge }}</td> --}}
+                                                        <td>{{ $order->order_amount - $order->restaurant_discount_amount }}</td>
+                                                        <td>{{ round(($order->order_amount - $order->restaurant_discount_amount) * 0.12) }}</td>                                                                                                     
+                                                        <td>{{ round($order->order_amount - $order->restaurant_discount_amount - ($order->order_amount - $order->restaurant_discount_amount) * 0.12) }}</td>
+                                                         {{-- <td>{{ $order->delivery_charge }}</td> --}}
                                                         <td>{{ Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}
                                                         </td>
                                                         <td>

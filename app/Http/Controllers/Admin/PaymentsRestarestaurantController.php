@@ -138,7 +138,8 @@ class PaymentsRestarestaurantController extends Controller
             if($request->has('payment_by') && !empty($input['payment_by'])) {
                 // $orders = $orders->where('payment_by', 'LIKE', '%'.$input['payment_by'].'%');
             }
-            $orders = $orders->get();
+            $orders = Order::where('order_status', 'delivered')->where('payment_status', 'paid')->where('payment_to_restaurant', false)->get();
+            // dd($orders);
         }
         return view('admin-views.restarestaurant.index', compact('account_transaction', 'admins', 'orders', 'restaurant','payment_to_restaurant'));
     }
@@ -151,12 +152,10 @@ class PaymentsRestarestaurantController extends Controller
         $data = array_merge($data, $request->form_data);
         $orders = Order::whereIn('id', $request->order_ids)->get();
         $orderTotal = $orderFee = 0;
-        foreach($orders as $order) {
-            $orderTotal += $order->order_amount;
-            // $orderFee += $order->delivery_charge;
-            $orderFee += $order->order_amount * 0.12;
-
-            $order->payment_to_restaurant = 1;
+        foreach ($orders as $order) {
+            $orderTotal += $order->order_amount - $order->restaurant_discount_amount;
+            $orderFee += ($order->order_amount - $order->restaurant_discount_amount) * 0.12;
+             $order->payment_to_restaurant = 1;
             $order->save();
         }
         $data['total_order_payment'] = $orderTotal;
