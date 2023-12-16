@@ -281,6 +281,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>['localization','react']], 
             Route::get('running-orders', 'OrderController@get_running_orders');
             Route::get('details', 'OrderController@get_order_details');
             Route::post('place', 'OrderController@place_order');  // visitor logs
+            Route::post('place-order', 'OrderController@place_order');  // visitor logs
             Route::put('cancel', 'OrderController@cancel_order');
             Route::post('refund-request', 'OrderController@refund_request');
             Route::get('refund-reasons', 'OrderController@refund_reasons');

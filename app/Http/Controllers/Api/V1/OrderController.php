@@ -61,7 +61,7 @@ class OrderController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'order_amount' => 'required',
-            'payment_method'=>'required|in:cash_on_delivery,digital_payment,wallet',
+            'payment_method'=>'required|in:cash_on_delivery,digital_payment,wallet,prepaid',
             'order_type' => 'required|in:take_away,delivery',
             'restaurant_id' => 'required',
             'distance' => 'required_if:order_type,delivery',
@@ -329,6 +329,12 @@ class OrderController extends Controller
         $order->order_amount = $request['order_amount'];
         $order->payment_status = $request['payment_method']=='wallet'?'paid':'unpaid';
         $order->order_status = $request['payment_method']=='digital_payment'?'pending':($request->payment_method == 'wallet'?'confirmed':'pending');
+
+        if( $request['payment_method']=='prepaid') {
+            $order->payment_status = 'paid';
+            $order->order_status = 'confirmed';   
+        }
+
         $order->coupon_code = $request['coupon_code'];
         $order->payment_method = $request->payment_method;
         $order->transaction_reference = null;
