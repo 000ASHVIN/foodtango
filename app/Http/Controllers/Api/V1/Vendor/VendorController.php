@@ -24,6 +24,7 @@ use App\Models\SubscriptionTransaction;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
+use App\Models\Category;
 
 class VendorController extends Controller
 {
@@ -576,6 +577,43 @@ class VendorController extends Controller
         ];
 
         return response()->json($data, 200);
+    }
+
+    public function get_products_by_category(Request $request)
+    {
+        $limit=$request->limit?$request->limit:25;
+        $offset=$request->offset?$request->offset:1;
+
+        $type = $request->query('type', 'all');
+
+        $paginator = Food::type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->latest()->paginate($limit, ['*'], 'page', $offset);
+
+        $categories = Category::pluck('name', 'id');
+        $productsByCategory = [];
+
+        foreach ($paginator->items() as $product) {
+            $categoryId = $product->category_id;
+            $product->category_name = '';
+
+            if(!isset($productsByCategory[$categoryId])) {
+                $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
+                $productsByCategory[$categoryId] = $category;
+            }
+            $productsByCategory[$categoryId]['products'][] = $product;
+        }
+
+        $updatedList =[];
+
+        foreach ($productsByCategory as $product) {
+            $updatedList[] = $product;
+        }
+
+        return [
+            'total_size' => $paginator->total(),
+            'limit' => $limit,
+            'offset' => $offset,
+            'products' => $updatedList
+        ];
     }
 
     public function update_bank_info(Request $request)

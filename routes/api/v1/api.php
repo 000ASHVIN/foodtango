@@ -112,6 +112,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>['localization','react']], 
         Route::put('campaign-join', 'VendorController@addrestaurant');
         Route::get('get-withdraw-list', 'VendorController@withdraw_list');
         Route::get('get-products-list', 'VendorController@get_products');
+        Route::get('get-products-by-categories', 'VendorController@get_products_by_category');
         Route::put('update-bank-info', 'VendorController@update_bank_info');
         Route::post('request-withdraw', 'VendorController@request_withdraw');
         Route::get('get-expense', 'ReportController@expense_report');
