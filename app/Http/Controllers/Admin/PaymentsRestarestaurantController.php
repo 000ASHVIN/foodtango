@@ -116,7 +116,7 @@ class PaymentsRestarestaurantController extends Controller
         $orders = collect();
         $restaurant = 0;
         if(!empty($input)) {
-            $orders = Order::with(['customer', 'restaurant'])->where('payment_to_restaurant', 0);
+            $orders = Order::with(['customer', 'restaurant', 'details'])->where('payment_to_restaurant', 0);
             // dd($orders->get());
             if($request->has('restaurant_id') && !empty($input['restaurant_id'])) {
                 $orders = $orders->where('restaurant_id', $input['restaurant_id']);
@@ -124,21 +124,21 @@ class PaymentsRestarestaurantController extends Controller
             }
             if($request->has('start_date') && !empty($input['start_date']) && $request->has('end_date') && !empty($input['end_date'])) {
                 $startDate = Carbon::parse($input['start_date']);
-                $endDate = Carbon::parse($input['end_date']);
+                $endDate = Carbon::parse($input['end_date'])->endOfDay();
                 $orders = $orders->whereBetween('created_at', [$startDate, $endDate]);
             }
-            if($request->has('method') && !empty($input['method'])) {
-                $orders = $orders->where('payment_method', 'LIKE', '%'.$input['method'].'%');
-            }
+            // if($request->has('method') && !empty($input['method'])) {
+            //     $orders = $orders->where('payment_method', 'LIKE', '%'.$input['method'].'%');
+            // }
 
-            if($request->has('ref') && !empty($input['ref'])) {
-                $orders = $orders->where('transaction_reference', 'LIKE', '%'.$input['ref'].'%');
-            }
+            // if($request->has('ref') && !empty($input['ref'])) {
+            //     $orders = $orders->where('transaction_reference', 'LIKE', '%'.$input['ref'].'%');
+            // }
             
-            if($request->has('payment_by') && !empty($input['payment_by'])) {
-                // $orders = $orders->where('payment_by', 'LIKE', '%'.$input['payment_by'].'%');
-            }
-            $orders = Order::where('order_status', 'delivered')->where('payment_status', 'paid')->where('payment_to_restaurant', false)->get();
+            // if($request->has('payment_by') && !empty($input['payment_by'])) {
+            //     // $orders = $orders->where('payment_by', 'LIKE', '%'.$input['payment_by'].'%');
+            // }
+            $orders = $orders->where('order_status', 'delivered')->where('payment_status', 'paid')->where('payment_to_restaurant', false)->get();
             // dd($orders);
         }
         return view('admin-views.restarestaurant.index', compact('account_transaction', 'admins', 'orders', 'restaurant','payment_to_restaurant'));
@@ -150,14 +150,34 @@ class PaymentsRestarestaurantController extends Controller
         ], ['order_ids' => 'Please select orders.']);
         $data['orders'] = json_encode($request->order_ids);
         $data = array_merge($data, $request->form_data);
-        $orders = Order::whereIn('id', $request->order_ids)->get();
+        $orders = Order::with(['details'])->whereIn('id', $request->order_ids)->get();
         $orderTotal = $orderFee = 0;
         foreach ($orders as $order) {
-            $orderTotal += $order->order_amount - $order->restaurant_discount_amount;
-            $orderFee += ($order->order_amount - $order->restaurant_discount_amount) * 0.12;
              $order->payment_to_restaurant = 1;
+             
+             $order_sub_total = 0;
+             $discount_total = 0;
+             $commission = 0;
+
+             foreach ($order->details as $details) {
+                $order_sub_total += $details->price * $details->quantity;
+                $discount_total += $details->discount_on_food * $details->quantity;
+            }
+
+            $order_sub_total = round($order_sub_total - $discount_total);
+
+            $commission = round($order_sub_total * 0.12);
+
+
+            $orderTotal += $order_sub_total;
+            $orderFee += $commission;
+            
             $order->save();
         }
+
+
+        // dd($orderTotal - $orderFee);
+
         $data['total_order_payment'] = $orderTotal;
         $data['total_service_fees'] = $orderFee;
 

@@ -154,7 +154,7 @@
                     <img src="{{ asset('/public/assets/admin/img/collect-cash.png') }}" class="w-20px" alt="public">
                 </div>
                 <span>
-                    {{ translate('Restuant Payments') }}
+                    Restaurant Payments
                 </span>
             </h1>
         </div>
@@ -352,23 +352,40 @@
                                         @foreach ($orders as $k => $order)
                                             @if ($order->payment_to_restaurant == 0)
                                                 @if ($order->order_status == 'delivered' || $order->order_status == 'paid')
+                                                <?php 
+                                                    $order_total = 0;
+                                                    $discount_total = 0;
+                                                    $commission = 0;
+                                                    $restaurant_payment = 0;
+
+                                                    foreach ($order->details as $details) {
+                                                        $order_total += $details->price * $details->quantity;
+                                                        $discount_total += $details->discount_on_food * $details->quantity;
+                                                    }
+
+                                                    $order_total = round($order_total - $discount_total);
+
+                                                    $commission = round($order_total * 0.12);
+
+                                                    $restaurant_payment =  round($order_total - $commission);
+
+                                                ?>
                                                     <tr class="thead-light">
                                                         <th>
                                                             <label class="new-checkbox-container">
                                                                 <input type="checkbox" name="order[{{ $order->id }}]"
                                                                     class="order-checkbox order-{{ $order->id }}"
                                                                     data-id="{{ $order->id }}"
-                                                                    data-total="{{ $order->order_amount - $order->restaurant_discount_amount}}"
-                                                                    data-fee="{{ $order->delivery_charge }}">
+                                                                    data-total="{{ $order_total }}"
+                                                                    data-fee="{{ $commission }}">
                                                             </label>
                                                         </th>
                                                         <td>
                                                             <a href="{{ route('admin.order.details', ['id' => $order->id]) }}">{{ $order->id }}</a>
                                                         </td>
-                                                        <td>{{ $order->order_amount - $order->restaurant_discount_amount }}</td>
-                                                        <td>{{ round(($order->order_amount - $order->restaurant_discount_amount) * 0.12) }}</td>                                                                                                     
-                                                        <td>{{ round($order->order_amount - $order->restaurant_discount_amount - ($order->order_amount - $order->restaurant_discount_amount) * 0.12) }}</td>
-                                                         {{-- <td>{{ $order->delivery_charge }}</td> --}}
+                                                        <td>{{ $order_total }}</td>
+                                                        <td>{{ $commission }}</td>                                                                                                     
+                                                        <td>{{ $restaurant_payment }}</td>
                                                         <td>{{ Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}
                                                         </td>
                                                         <td>
@@ -705,6 +722,7 @@
             });
 
             $('#submit_btn').click(function() {
+                // e.preventDefault();
                 var data = [];
                 var selectedCheckboxes = $('.order-checkbox:checked');
                 var selectedCheckboxArray = [];
