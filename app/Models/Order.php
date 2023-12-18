@@ -33,6 +33,7 @@ class Order extends Model
         'distance'=>'float',
         'subscription_id'=>'integer',
         'cutlery'=>'boolean',
+        'payment_to_restaurant'=>'boolean',
     ];
 
     public function logs()

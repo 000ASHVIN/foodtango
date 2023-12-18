@@ -4,6 +4,8 @@
 /storage/*.key
 /storage
 storage
+/storage/debugbar/*
+/storage/framework
 /vendor
 .env
 .env.backup

@@ -1396,6 +1396,21 @@
                     @endif
                     <!-- End provide_dm_earning -->
 
+                    <!-- Resturant Payments -->
+                    @if (\App\CentralLogics\Helpers::module_permission_check('payments'))
+                       <li
+                           class="navbar-vertical-aside-has-menu {{ Request::is('admin/payments-transaction*') ? 'active' : '' }}">
+                           <a class="js-navbar-vertical-aside-menu-link nav-link"
+                               href="{{ route('admin.payments-transaction.index') }}"
+                               title="{{ translate('messages.resturantpayments') }}">
+                               <i class="tio-money nav-icon"></i>
+                               <span
+                                   class="navbar-vertical-aside-mini-mode-hidden-elements text-truncate">{{ translate('Resturant Payments') }}</span>
+                           </a>
+                       </li>
+                    @endif
+                    <!-- End  Resturant Payments -->
+                 
 
                     <li class="nav-item pt-100px">
 
