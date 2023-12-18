@@ -238,6 +238,7 @@ class HomeController extends Controller
     {
         $data = self::get_settings('refund_policy');
         $status = self::get_settings('refund_policy_status');
+
         if ($request->expectsJson()) {
             if($request->hasHeader('X-localization')){
                 $current_language = $request->header('X-localization');
@@ -246,7 +247,7 @@ class HomeController extends Controller
             }
             return response()->json($data);
         }
-        abort_if($status == 0 ,404);
+        // abort_if($status == 0 ,404);
         return view('refund_policy',compact('data'));
     }
 

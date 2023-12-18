@@ -325,12 +325,10 @@
                                         href="{{ route('shipping-policy') }}">{{ translate('messages.shipping_policy') }}</a>
                                 </li>
                                 @endif
-                                @if (isset($landing_data['refund_policy_status']) && $landing_data['refund_policy_status']  == 1)
                                 <li>
                                     <a
                                         href="{{ route('refund-policy') }}">{{ translate('messages.refund_policy') }}</a>
                                 </li>
-                                @endif
                                 @if (isset($landing_data['cancellation_policy_status']) && $landing_data['cancellation_policy_status']  == 1)
                                 <li>
                                     <a
