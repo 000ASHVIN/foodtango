@@ -134,23 +134,27 @@ class Helpers
                 $item['add_ons'] = self::addon_data_formatting(AddOn::whereIn('id', json_decode($item['add_ons']))->active()->get(), true, $trans, $local);
                 $item['tags'] = $item->tags;
                 $item['variations'] = json_decode($item['variations'], true);
-                $item['restaurant_name'] = $item->restaurant->name;
-                $item['restaurant_status'] = (int) $item->restaurant->status;
-                $item['restaurant_discount'] = self::get_restaurant_discount($item->restaurant) ? $item->restaurant->discount->discount : 0;
-                $item['restaurant_opening_time'] = $item->restaurant->opening_time ? $item->restaurant->opening_time->format('H:i') : null;
-                $item['restaurant_closing_time'] = $item->restaurant->closeing_time ? $item->restaurant->closeing_time->format('H:i') : null;
-                $item['schedule_order'] = $item->restaurant->schedule_order;
-                $item['tax'] = $item->restaurant->tax;
-                $item['rating_count'] = (int)($item->rating ? array_sum(json_decode($item->rating, true)) : 0);
-                $item['avg_rating'] = (float)($item->avg_rating ? $item->avg_rating : 0);
-                $item['free_delivery'] =  (int) $item->restaurant->free_delivery ?? 0;
-                $item['min_delivery_time'] =  (int) explode('-',$item->restaurant->delivery_time)[0] ?? 0;
-                $item['max_delivery_time'] =  (int) explode('-',$item->restaurant->delivery_time)[1] ?? 0;
+
+                $cui;
                 $cuisine =[];
-                $cui =$item->restaurant->load('cuisine');
-                if(isset($cui->cuisine)){
-                    foreach($cui->cuisine as $cu){
-                        $cuisine[]= ['id' => (int) $cu->id, 'name' => $cu->name , 'image' => $cu->image];
+                if($item->restaurant) {
+                    $item['restaurant_name'] = $item->restaurant->name;
+                    $item['restaurant_status'] = (int) $item->restaurant->status;
+                    $item['restaurant_discount'] = self::get_restaurant_discount($item->restaurant) ? $item->restaurant->discount->discount : 0;
+                    $item['restaurant_opening_time'] = $item->restaurant->opening_time ? $item->restaurant->opening_time->format('H:i') : null;
+                    $item['restaurant_closing_time'] = $item->restaurant->closeing_time ? $item->restaurant->closeing_time->format('H:i') : null;
+                    $item['schedule_order'] = $item->restaurant->schedule_order;
+                    $item['tax'] = $item->restaurant->tax;
+                    $item['rating_count'] = (int)($item->rating ? array_sum(json_decode($item->rating, true)) : 0);
+                    $item['avg_rating'] = (float)($item->avg_rating ? $item->avg_rating : 0);
+                    $item['free_delivery'] =  (int) $item->restaurant->free_delivery ?? 0;
+                    $item['min_delivery_time'] =  (int) explode('-',$item->restaurant->delivery_time)[0] ?? 0;
+                    $item['max_delivery_time'] =  (int) explode('-',$item->restaurant->delivery_time)[1] ?? 0;
+                    $cui =$item->restaurant->load('cuisine');
+                    if(isset($cui->cuisine)){
+                        foreach($cui->cuisine as $cu){
+                            $cuisine[]= ['id' => (int) $cu->id, 'name' => $cu->name , 'image' => $cu->image];
+                        }
                     }
                 }
 

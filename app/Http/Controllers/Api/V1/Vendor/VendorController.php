@@ -599,12 +599,15 @@ class VendorController extends Controller
                 $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
                 $productsByCategory[$categoryId] = $category;
             }
+
             $productsByCategory[$categoryId]['products'][] = $product;
         }
 
         $updatedList =[];
 
         foreach ($productsByCategory as $product) {
+            $product['products'] = Helpers::product_data_formatting(data:$product['products'], multi_data: true, trans:true, local:app()->getLocale());
+
             $updatedList[] = $product;
         }
 
