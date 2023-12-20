@@ -10,6 +10,8 @@ use App\Models\PaymentsToRestaurant;
 use App\Models\Restaurant;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\CentralLogics\Helpers;
 
 class PaymentsRestarestaurantController extends Controller
 {
@@ -148,8 +150,31 @@ class PaymentsRestarestaurantController extends Controller
         $this->validate($request, [
             'order_ids' => 'required'
         ], ['order_ids' => 'Please select orders.']);
+
         $data['orders'] = json_encode($request->order_ids);
         $data = array_merge($data, $request->form_data);
+
+
+        if(!$data['method']) {
+            $error_data = [
+                'success' => false,
+                'errors' => '',
+                'message' => 'Method is required'
+            ];
+
+            return response()->json($error_data, 422);
+        }
+
+        if(!$data['payment_by']) {
+            $error_data = [
+                'success' => false,
+                'errors' => '',
+                'message' => 'Please select payment by'
+            ];
+
+            return response()->json($error_data, 422);
+        }
+
         $orders = Order::with(['details'])->whereIn('id', $request->order_ids)->get();
         $orderTotal = $orderFee = 0;
         foreach ($orders as $order) {
@@ -174,9 +199,6 @@ class PaymentsRestarestaurantController extends Controller
             
             $order->save();
         }
-
-
-        // dd($orderTotal - $orderFee);
 
         $data['total_order_payment'] = $orderTotal;
         $data['total_service_fees'] = $orderFee;

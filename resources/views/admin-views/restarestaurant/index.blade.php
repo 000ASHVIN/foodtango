@@ -174,7 +174,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label class="input-label"
-                                    for="restaurant">{{ translate('messages.select restaurant') }}<span
+                                    for="restaurant">{{ translate('messages.select restaurant') }}*<span
                                         class="input-label-secondary"></span></label>
                                 <select id="restaurant_id" name="restaurant_id"
                                     data-placeholder="{{ translate('messages.select restaurant') }}"
@@ -219,7 +219,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label class="input-label" for="method">{{ translate('messages.method') }}<span
+                                <label class="input-label" for="method">{{ translate('messages.method') }}*<span
                                         class="input-label-secondary"></span></label>
                                 <input class="form-control h--48px" type="text" name="method" id="method"
                                     value="{{ request()->has('method') ? request()->get('method') : '' }}" maxlength="191"
@@ -237,7 +237,7 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label class="input-label" for="amount">{{ translate('messages.payment by') }}<span
+                                <label class="input-label" for="amount">{{ translate('messages.payment by') }}*<span
                                         class="input-label-secondary"></span></label>
                                 <select name="payment_by" id="payment_by" class="form-control h--48px select2">
                                     <option value="">Select Payment by</option>
@@ -312,11 +312,11 @@
                                 <a href="{{ route('admin.payments-transaction.index') }}"> <button type="submit"
                                         class="btn btn-secondary mr-1">{{ translate('messages.reset') }}</button></a>
                                 <a href=""><button type="button" id="submit_btn"
-                                        class="btn btn-secondary">{{ translate('messages.conform payment') }}</button></a>
+                                        class="btn btn-secondary">Confirm Payment</button></a>
                             </div>
                             {{-- <div class="">
                                 <a href="{{ route('admin.payments-transaction.index') }}" class="btn btn--reset color">{{translate('messages.reset')}}</a>
-                                <button type="button" id="submit_btn" class="btn btn--reset color ml-3 mr-5">{{translate('messages.confirm payment:')}}</button>
+                                <button type="button" id="submit_btn" class="btn btn--reset color ml-3 mr-5">Confirm Payment</button>
                             </div> --}}
                         </div>
                         <hr>
@@ -721,8 +721,8 @@
                 }
             });
 
-            $('#submit_btn').click(function() {
-                // e.preventDefault();
+            $('#submit_btn').click(function(e) {
+                e.preventDefault();
                 var data = [];
                 var selectedCheckboxes = $('.order-checkbox:checked');
                 var selectedCheckboxArray = [];
@@ -767,10 +767,11 @@
                         $('#error-message').show();
                         $('#error-message').html(error.responseJSON.message)
                         console.log('Something went wrong')
-                        setTimeout(() => {
-                            $('#error-message').hide();
-                        }, 3000);
+                        // setTimeout(() => {
+                        //     $('#error-message').hide();
+                        // }, 500);
                     },
+
                     // complete: function() {
                     //     me.attr('disabled', false);
                     //     me.html('Submit');
