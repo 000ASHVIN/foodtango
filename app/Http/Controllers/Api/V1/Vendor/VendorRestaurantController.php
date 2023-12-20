@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers\Api\V1;
+namespace App\Http\Controllers\Api\V1\Vendor;
 
 use App\Models\Coupon;
 use App\Models\Review;
+use App\Models\PaymentsToRestaurant;
 use Illuminate\Http\Request;
 use App\CentralLogics\Helpers;
 use Illuminate\Support\Facades\DB;
@@ -11,7 +12,7 @@ use App\Http\Controllers\Controller;
 use App\CentralLogics\RestaurantLogic;
 use Illuminate\Support\Facades\Validator;
 
-class RestaurantController extends Controller
+class VendorRestaurantController extends Controller
 {
     public function get_restaurants(Request $request, $filter_data="all")
     {
@@ -213,5 +214,79 @@ class RestaurantController extends Controller
         ->get();
         return response()->json($coupons, 200);
     }
-    
+
+    public function get_payments_to_restaurant(Request $request)
+    {
+
+        // dd($request);
+        $limit=$request->limit?$request->limit:25;
+        $offset=$request->offset?$request->offset:1;
+        $restaurant_id= $request->restaurant_id;
+        $validator = Validator::make($request->all(), [
+            'restaurant_id' => 'required',
+        ]);
+        // $validate_data = $request->validate([
+        //     'restaurant_id' => 'required',
+        // ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+        }
+        // $type = $request->query('type', 'all');
+
+        // $paginator = PaymentsToRestaurant::where('restaurant_id', $request->restaurant_id)->with('orders')->latest()->paginate($limit, ['*'], 'page', $offset);
+        $paginator = PaymentsToRestaurant::where('restaurant_id', $request->restaurant_id)->latest()->paginate($limit, ['*'], 'page', $offset);
+
+        $records = [];
+        foreach($paginator->items() as $payment) {
+            // dd(json_decode($payment->orders));
+            $payment->orders = json_decode($payment->orders);
+            $payment->restaurant_payment =  $payment->total_payment;
+            $payment->total_commission_fees =  $payment->total_service_fees;
+
+            unset($payment->total_payment);
+            unset($payment->total_service_fees);
+            
+            $records[] = $payment;
+        }
+
+        $data = [
+            'total_size' => $paginator->total(),
+            'limit' => $limit,
+            'offset' => $offset,
+            'data' => $records
+            // 'data' => Helpers::product_data_formatting(data:$paginator->items(), multi_data: true, trans:true, local:app()->getLocale())
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    public function get_payments_to_restaurant_details(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'restaurant_payment_id' => 'required'
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+        }
+        // $type = $request->query('type', 'all');
+
+        $record = PaymentsToRestaurant::where('id', $request->restaurant_payment_id)->with('orders')->first();
+
+            $record->orders = json_decode($record->orders);
+            $record->restaurant_payment =  $record->total_payment;
+            $record->total_commission_fees =  $record->total_service_fees;
+
+            unset($record->total_payment);
+            unset($record->total_service_fees);
+                    
+        $data = [
+            'success' => true,
+            'data' => $record
+        ];
+
+        return response()->json($data, 200);
+    }
+
 }

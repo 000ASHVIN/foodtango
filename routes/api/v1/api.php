@@ -126,7 +126,8 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>['localization','react']], 
         Route::post('coupon-delete', 'CouponController@delete')->name('delete');
         Route::post('coupon-search', 'CouponController@search')->name('search');
         Route::get('coupon/view-without-translate', 'CouponController@view_without_translate');
-
+        Route::get('payments-to-restaurant', 'VendorRestaurantController@get_payments_to_restaurant')->name('payments-to-restaurant');
+        Route::get('payments-to-restaurant-details', 'VendorRestaurantController@get_payments_to_restaurant_details')->name('payments-to-restaurant-details');
 
 
         //remove account

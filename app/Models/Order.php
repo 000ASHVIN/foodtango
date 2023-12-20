@@ -44,6 +44,10 @@ class Order extends Model
     {
         return $this->belongsTo(Zone::class, 'zone_id');
     }
+    public function restaurant_payment()
+    {
+        return $this->belongsTo(PaymentsToRestaurant::class, 'restaurant_payment_id');
+    }
 
     public function subscription_logs()
     {

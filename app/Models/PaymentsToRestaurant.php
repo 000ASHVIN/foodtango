@@ -13,4 +13,9 @@ class PaymentsToRestaurant extends Model
     {
         return $this->hasOne(Order::class, 'restaurant_discount_amount');
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'restaurant_payment_id');
+    }
 }

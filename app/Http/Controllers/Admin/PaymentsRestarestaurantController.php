@@ -183,10 +183,15 @@ class PaymentsRestarestaurantController extends Controller
 
         $data['total_payment'] = $orderTotal - $orderFee;
         $data['reference'] = $data['ref'];
-        unset($data['restaurant_id']);
         unset($data['ref']);
         // dd($data);
         $record = PaymentsToRestaurant::create($data);
+
+        foreach ($orders as $order) {
+           $order->restaurant_payment_id = $record->id;       
+           $order->save();
+        }
+
         return response()->json(['status' => 'success']);
     }
 }
