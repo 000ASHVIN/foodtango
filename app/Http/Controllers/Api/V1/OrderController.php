@@ -331,8 +331,8 @@ class OrderController extends Controller
         $order->order_status = $request['payment_method']=='digital_payment'?'pending':($request->payment_method == 'wallet'?'confirmed':'pending');
 
         if( $request['payment_method']=='prepaid') {
-            $order->payment_status = 'paid';
-            $order->order_status = 'confirmed';   
+            $order->payment_status = 'unpaid';
+            $order->order_status = 'pending';   
         }
 
         $order->coupon_code = $request['coupon_code'];
@@ -381,7 +381,7 @@ class OrderController extends Controller
             if ($product) {
                 $product_variations = json_decode($product->variations, true);
                 $variations=[];
-                if (count($product_variations)) {
+                if ($product_variations && count($product_variations)) {
                     $variation_data = Helpers::get_varient($product_variations, $c['variations']);
                      $price = $variation_data['price'];
 					//$price = $product['price'] + $variation_data['price'];
