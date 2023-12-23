@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\CentralLogics\RestaurantLogic;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Order;
 
 class VendorRestaurantController extends Controller
 {
@@ -284,6 +285,65 @@ class VendorRestaurantController extends Controller
         $data = [
             'success' => true,
             'data' => $record
+        ];
+
+        return response()->json($data, 200);
+    }
+
+    public function get_payments_to_restaurant_stats(Request $request, $restaurant_id)
+    {
+        
+        $unpaid_orders = Order::with(['details'])->where('restaurant_id', $restaurant_id)->where('payment_status', 'paid')->where('order_status', 'delivered')->where('payment_to_restaurant', '0')->get();
+        $payments_to_restaurant = PaymentsToRestaurant::where('restaurant_id', $restaurant_id)->get();
+        $latest_payment_record = PaymentsToRestaurant::where('restaurant_id', $restaurant_id)->latest('created_at')->first();
+
+        $total_due_amount = 0;
+        $total_paid_amount = 0;
+        $total_penalty = 0;
+        $latest_payment_amount = 0;
+        $latest_penalty = 0;
+
+        if($latest_payment_record && $latest_payment_record->total_payment) {
+            $latest_payment_amount = round($latest_payment_record->total_payment);
+        }
+
+        if($payments_to_restaurant && count($payments_to_restaurant)) {
+            foreach ($payments_to_restaurant as $payment) {
+                $total_paid_amount = $total_paid_amount + $payment->total_payment;
+            }
+        }
+
+        $orders_total = 0;
+
+        if($unpaid_orders && count($unpaid_orders)) {
+            foreach ($unpaid_orders as $order) {            
+                $order_sub_total = 0;
+                $discount_total = 0;
+                $commission = 0;
+    
+                foreach ($order->details as $details) {
+                   $order_sub_total += $details->price * $details->quantity;
+                   $discount_total += $details->discount_on_food * $details->quantity;
+               }
+    
+               $order_sub_total = round($order_sub_total - $discount_total);
+               $orders_total += $order_sub_total;
+            }
+        }
+
+        $total_due_amount =   round($orders_total - round($orders_total * 0.12));
+
+        $stats_data = [
+            'total_due_amount' => $total_due_amount,
+            'total_paid_amount' => $total_paid_amount,
+            'total_penalty' => $total_penalty,
+            'latest_payment_amount' => $latest_payment_amount,
+            'latest_penalty' => $latest_penalty,
+        ];
+
+        $data = [
+            'success' => true,
+            'data' => $stats_data
         ];
 
         return response()->json($data, 200);
