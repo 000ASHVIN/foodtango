@@ -342,7 +342,7 @@
                                             <th>{{ translate('messages.Order id') }}</th>
                                             <th>{{ translate('messages.order total') }}</th>
                                             <th>{{ translate('messages.order commission') }}</th>
-                                            <th>{{ translate('messages.Your payment') }}</th>
+                                            <th>Restaurant payment</th>
                                             {{-- <th>{{translate('messages.service fee')}}</th> --}}
                                             <th>{{ translate('messages.date') }}</th>
                                             <th>{{ translate('messages.order status') }}</th>
@@ -365,7 +365,7 @@
 
                                                     $order_total = round($order_total - $discount_total);
 
-                                                    $commission = round($order_total * 0.12);
+                                                    $commission = round(($order_total * $order->admin_commission) / 100);
 
                                                     $restaurant_payment =  round($order_total - $commission);
 

@@ -176,23 +176,37 @@ class PaymentsRestarestaurantController extends Controller
         }
 
         $orders = Order::with(['details'])->whereIn('id', $request->order_ids)->get();
+
         $orderTotal = $orderFee = 0;
+        $order_details = [];
         foreach ($orders as $order) {
              $order->payment_to_restaurant = 1;
              
              $order_sub_total = 0;
              $discount_total = 0;
              $commission = 0;
+             $order_commission = $order->admin_commission;
 
              foreach ($order->details as $details) {
                 $order_sub_total += $details->price * $details->quantity;
                 $discount_total += $details->discount_on_food * $details->quantity;
-            }
+             }
 
             $order_sub_total = round($order_sub_total - $discount_total);
 
-            $commission = round($order_sub_total * 0.12);
+            $commission = round(($order_sub_total * $order_commission) / 100);
+            
 
+            $order_data = clone $order;
+
+            $order_data->order_total_amount = $order_sub_total;
+            $order_data->commission_amount = $commission;
+            $order_data->payment_to_restaurant_amount = round($order_sub_total - $commission);;
+
+            unset($order_data->details);
+            unset($order_data->delivery_address);
+
+            $order_details[] = $order_data;
 
             $orderTotal += $order_sub_total;
             $orderFee += $commission;
@@ -200,13 +214,18 @@ class PaymentsRestarestaurantController extends Controller
             $order->save();
         }
 
+        // return response()->json($order_details, 200);
+
+        // $encode =  json_encode($order_details);
+        // dd($order_details);
+
         $data['total_order_payment'] = $orderTotal;
         $data['total_service_fees'] = $orderFee;
-
+        $data['order_details'] = json_encode($order_details);
         $data['total_payment'] = $orderTotal - $orderFee;
         $data['reference'] = $data['ref'];
         unset($data['ref']);
-        // dd($data);
+
         $record = PaymentsToRestaurant::create($data);
 
         foreach ($orders as $order) {

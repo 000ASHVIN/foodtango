@@ -244,6 +244,8 @@ class VendorRestaurantController extends Controller
             $payment->orders = json_decode($payment->orders);
             $payment->restaurant_payment =  $payment->total_payment;
             $payment->total_commission_fees =  $payment->total_service_fees;
+            $payment->order_details =  json_decode($payment->order_details);
+
 
             unset($payment->total_payment);
             unset($payment->total_service_fees);
