@@ -1,25 +1,29 @@
 importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js");
-importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js");
+importScripts(
+    "https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"
+);
 
 firebase.initializeApp({
-  apiKey: "AIzaSyCeaw_gVN0iQwFHyuF8pQ6PbVDmSVQw8AY",
-  authDomain: "stackfood-bd3ee.firebaseapp.com",
-  projectId: "stackfood-bd3ee",
-  storageBucket: "stackfood-bd3ee.appspot.com",
-  messagingSenderId: "1049699819506",
-  appId: "1:1049699819506:web:a4b5e3bedc729aab89956b",
-  databaseURL: "...",
+    apiKey: "AIzaSyBceikp93Z0LwiAyikKDXzL6qti_MQCvYM",
+    authDomain: "foodtango-9ece1.firebaseapp.com",
+    projectId: "foodtango-9ece1",
+    storageBucket: "foodtango-9ece1.appspot.com",
+    messagingSenderId: "629748764581",
+    appId: "1:629748764581:web:e7f1c5a32564aba9d4224c",
+    measurementId: "G-8BZRE1QQHD",
+    //   databaseURL: "...",
 });
 
 const messaging = firebase.messaging();
 
 messaging.setBackgroundMessageHandler(function (payload) {
+    console.log("notification", payload);
     const promiseChain = clients
         .matchAll({
             type: "window",
-            includeUncontrolled: true
+            includeUncontrolled: true,
         })
-        .then(windowClients => {
+        .then((windowClients) => {
             for (let i = 0; i < windowClients.length; i++) {
                 const windowClient = windowClients[i];
                 windowClient.postMessage(payload);
@@ -28,12 +32,13 @@ messaging.setBackgroundMessageHandler(function (payload) {
         .then(() => {
             const title = payload.notification.title;
             const options = {
-                body: payload.notification.score
-              };
+                body: payload.notification.score,
+            };
             return registration.showNotification(title, options);
         });
     return promiseChain;
 });
-self.addEventListener('notificationclick', function (event) {
-    console.log('notification received: ', event)
+
+self.addEventListener("notificationclick", function (event) {
+    console.log("notification received: ", event);
 });

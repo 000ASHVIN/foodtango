@@ -547,6 +547,8 @@
             appId: "{{isset($fcm_credentials['appId']) ? $fcm_credentials['appId'] : ''}}",
             measurementId: "{{isset($fcm_credentials['measurementId']) ? $fcm_credentials['measurementId'] : ''}}"
         };
+
+        console.log('firebaseConfig', firebaseConfig)
         firebase.initializeApp(firebaseConfig);
         const messaging = firebase.messaging();
 
@@ -555,9 +557,12 @@
             messaging
                 .requestPermission()
                 .then(function() {
+                    console.log("messaging.getToken() >>>", messaging.getToken())
                     return messaging.getToken()
                 })
                 .then(function(response) {
+                    console.log("response >>>", response)
+
                     subscribeTokenToTopic(response, 'admin_message');
                     console.log('subscribed');
                 }).catch(function(error) {

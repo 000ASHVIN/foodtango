@@ -12,6 +12,7 @@ use App\Http\Controllers\Controller;
 use App\CentralLogics\RestaurantLogic;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Order;
+use App\Models\BusinessSetting;
 
 class VendorRestaurantController extends Controller
 {
@@ -349,6 +350,61 @@ class VendorRestaurantController extends Controller
         ];
 
         return response()->json($data, 200);
+    }
+
+    public function send_push_notification(Request $request)
+    {
+
+        // info([$data, $topic, $type, $web_push_link]);
+        $key = BusinessSetting::where(['key' => 'push_notification_key'])->first()->value;
+
+        // dd($key);
+        $url = "https://fcm.googleapis.com/fcm/send";
+        $header = array(
+            "authorization: key=" . $key . "",
+            "content-type: application/json"
+        );
+        $postdata = '{
+            "to" : "/topics/' . 'admin_message' . '",
+            "mutable_content": true,
+            "data" : {
+                "title": "title",
+                "body" : "body" ,
+            },
+            "notification" : {
+                "title":"title",
+                "body" :"body",
+              }
+        }';
+
+        $data = [
+            "registration_ids" => "",
+            "notification" => [
+                "title" => $request->title,
+                "body" => $request->body,  
+            ]
+        ];
+
+
+
+        // dd($postdata);
+        $ch = curl_init();
+        $timeout = 120;
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+        // Get URL content
+        $result = curl_exec($ch);
+        // close handle to release resources
+
+        // dd($result);
+        curl_close($ch);
+
+        return response()->json(true, 200);
     }
 
 }

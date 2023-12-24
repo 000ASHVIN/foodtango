@@ -129,6 +129,8 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>['localization','react']], 
         Route::get('payments-to-restaurant', 'VendorRestaurantController@get_payments_to_restaurant')->name('payments-to-restaurant');
         Route::get('payments-to-restaurant-details', 'VendorRestaurantController@get_payments_to_restaurant_details')->name('payments-to-restaurant-details');
         Route::get('payments-to-restaurant-stats/{restaurant_id}', 'VendorRestaurantController@get_payments_to_restaurant_stats')->name('payments-to-restaurant-stats');
+        Route::get('send-push-notification', 'VendorRestaurantController@send_push_notification')->name('send-push-notification');
+
 
 
         //remove account
