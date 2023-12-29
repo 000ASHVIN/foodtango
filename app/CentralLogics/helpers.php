@@ -1324,6 +1324,7 @@ class Helpers
                 ]);
             }
 
+            $new_order_notification_send_to_vendor = 0;
             if ($order->order_type == 'delivery' && !$order->scheduled && $order->order_status == 'pending' && $order->payment_method == 'cash_on_delivery' && config('order_confirmation_model') == 'deliveryman' && $order->order_type != 'take_away') {
                 // if ($order->restaurant->self_delivery_system)
                 if (($order->restaurant->restaurant_model == 'commission' && $order->restaurant->self_delivery_system)
@@ -1337,13 +1338,17 @@ class Helpers
                         'image' => '',
                         'type' => 'new_order',
                     ];
-                    self::send_push_notif_to_device($order->restaurant->vendor->firebase_token, $data);
-                    DB::table('user_notifications')->insert([
-                        'data' => json_encode($data),
-                        'vendor_id' => $order->restaurant->vendor_id,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
+                    if($new_order_notification_send_to_vendor == 0) {
+                        self::send_push_notif_to_device($order->restaurant->vendor->firebase_token, $data);
+                        DB::table('user_notifications')->insert([
+                            'data' => json_encode($data),
+                            'vendor_id' => $order->restaurant->vendor_id,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ]);
+                        $new_order_notification_send_to_vendor = 1;
+                    }
+                    
                     $web_push_link = url('/').'/restaurant-panel/order/list/all';
                     self::send_push_notif_to_topic($data, "restaurant_panel_{$order->restaurant_id}_message", 'new_order', $web_push_link);
                 } else {
@@ -1372,13 +1377,17 @@ class Helpers
                     'image' => '',
                     'type' => 'new_order',
                 ];
-                self::send_push_notif_to_device($order->restaurant->vendor->firebase_token, $data);
-                DB::table('user_notifications')->insert([
-                    'data' => json_encode($data),
-                    'vendor_id' => $order->restaurant->vendor_id,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+                if($new_order_notification_send_to_vendor == 0) {
+                    self::send_push_notif_to_device($order->restaurant->vendor->firebase_token, $data);
+                    DB::table('user_notifications')->insert([
+                        'data' => json_encode($data),
+                        'vendor_id' => $order->restaurant->vendor_id,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                    $new_order_notification_send_to_vendor = 1;
+                }
+                
                 $web_push_link = url('/').'/restaurant-panel/order/list/all';
                 self::send_push_notif_to_topic($data, "restaurant_panel_{$order->restaurant_id}_message", 'new_order', $web_push_link);
             }
@@ -1391,14 +1400,16 @@ class Helpers
                     'image' => '',
                     'type' => 'new_order',
                 ];
-                self::send_push_notif_to_device($order->restaurant->vendor->firebase_token, $data);
-
-                DB::table('user_notifications')->insert([
-                    'data' => json_encode($data),
-                    'vendor_id' => $order->restaurant->vendor_id,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+                if($new_order_notification_send_to_vendor == 0) {
+                    self::send_push_notif_to_device($order->restaurant->vendor->firebase_token, $data);
+                    DB::table('user_notifications')->insert([
+                        'data' => json_encode($data),
+                        'vendor_id' => $order->restaurant->vendor_id,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]);
+                    $new_order_notification_send_to_vendor = 1;
+                }
                 $web_push_link = url('/').'/restaurant-panel/order/list/all';
                 self::send_push_notif_to_topic($data, "restaurant_panel_{$order->restaurant->id}_message", 'new_order', $web_push_link);
             }
@@ -1424,14 +1435,16 @@ class Helpers
                         'type' => 'new_order',
                     ];
 
-                    self::send_push_notif_to_device($order->restaurant->vendor->firebase_token, $data);
-
-                    DB::table('user_notifications')->insert([
-                        'data' => json_encode($data),
-                        'vendor_id' => $order->restaurant->vendor_id,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
+                    if($new_order_notification_send_to_vendor == 0) {
+                        self::send_push_notif_to_device($order->restaurant->vendor->firebase_token, $data);
+                        DB::table('user_notifications')->insert([
+                            'data' => json_encode($data),
+                            'vendor_id' => $order->restaurant->vendor_id,
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ]);
+                        $new_order_notification_send_to_vendor = 1;
+                    }
                     $web_push_link = url('/').'/restaurant-panel/order/list/all';
                     self::send_push_notif_to_topic($data, "restaurant_panel_{$order->restaurant_id}_message", 'new_order', $web_push_link);
                 }
