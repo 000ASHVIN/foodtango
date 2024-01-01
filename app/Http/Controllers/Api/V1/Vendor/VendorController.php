@@ -586,9 +586,9 @@ class VendorController extends Controller
 
         $type = $request->query('type', 'all');
 
-        $paginator = Food::type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->latest()->paginate($limit, ['*'], 'page', $offset);
+        $paginator = Food::with('category')->type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->latest()->paginate($limit, ['*'], 'page', $offset);
 
-        $categories = Category::pluck('name', 'id');
+        // $categories = Category::pluck('name', 'id');
         $productsByCategory = [];
 
         foreach ($paginator->items() as $product) {
@@ -596,10 +596,13 @@ class VendorController extends Controller
             $product->category_name = '';
 
             if(!isset($productsByCategory[$categoryId])) {
-                $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
-                $productsByCategory[$categoryId] = $category;
+                // $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
+                $productsByCategory[$categoryId] = [
+                    'id' => $categoryId,
+                    'name' => $product->category
+                ];
             }
-
+            
             $productsByCategory[$categoryId]['products'][] = $product;
         }
 
