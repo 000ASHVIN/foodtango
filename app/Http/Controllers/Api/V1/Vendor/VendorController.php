@@ -622,6 +622,31 @@ class VendorController extends Controller
         ];
     }
 
+    public function get_products_by_restaurant_or_category(Request $request)
+    {
+        $limit=$request->limit?$request->limit:25;
+        $offset=$request->offset?$request->offset:1;
+
+        $type = $request->query('type', 'all');
+
+        $paginator = Food::type($type);
+        if($request->has('restaurant_id') && !empty($request->restaurant_id)) {
+            $paginator = $paginator->where('restaurant_id', $request->restaurant_id);
+        }
+        if($request->has('category_id') && !empty($request->category_id)) {
+            $paginator = $paginator->where('category_id', $request->category_id);
+        }
+        $paginator = $paginator->latest()->paginate($limit, ['*'], 'page', $offset);
+        $data = [
+            'total_size' => $paginator->total(),
+            'limit' => $limit,
+            'offset' => $offset,
+            'products' => Helpers::product_data_formatting(data:$paginator->items(), multi_data: true, trans:true, local:app()->getLocale())
+        ];
+
+        return response()->json($data, 200);
+    }
+
     public function update_bank_info(Request $request)
     {
         $validator = Validator::make($request->all(), [

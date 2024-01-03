@@ -113,6 +113,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>['localization','react']], 
         Route::get('get-withdraw-list', 'VendorController@withdraw_list');
         Route::get('get-products-list', 'VendorController@get_products');
         Route::get('get-products-by-categories', 'VendorController@get_products_by_category');
+        Route::get('get-products-by-restaurant-and-categories', 'VendorController@get_products_by_restaurant_or_category');
         Route::put('update-bank-info', 'VendorController@update_bank_info');
         Route::post('request-withdraw', 'VendorController@request_withdraw');
         Route::get('get-expense', 'ReportController@expense_report');
@@ -129,7 +130,7 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>['localization','react']], 
         Route::get('payments-to-restaurant', 'VendorRestaurantController@get_payments_to_restaurant')->name('payments-to-restaurant');
         Route::get('payments-to-restaurant-details', 'VendorRestaurantController@get_payments_to_restaurant_details')->name('payments-to-restaurant-details');
         Route::get('payments-to-restaurant-stats/{restaurant_id}', 'VendorRestaurantController@get_payments_to_restaurant_stats')->name('payments-to-restaurant-stats');
-        Route::get('send-push-notification', 'VendorRestaurantController@send_push_notification')->name('send-push-notification');
+        // Route::get('send-push-notification', 'VendorRestaurantController@send_push_notification')->name('send-push-notification');
 
 
 
