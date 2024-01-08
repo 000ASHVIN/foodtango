@@ -586,24 +586,38 @@ class VendorController extends Controller
 
         $type = $request->query('type', 'all');
 
-        $paginator = Food::with('category')->type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->latest()->paginate($limit, ['*'], 'page', $offset);
+        // $paginator = Food::with('category')->type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->latest()->paginate($limit, ['*'], 'page', $offset);
 
-        // $categories = Category::pluck('name', 'id');
+        $categories = Category::all();
         $productsByCategory = [];
 
-        foreach ($paginator->items() as $product) {
-            $categoryId = $product->category_id;
-            $product->category_name = '';
+        // foreach ($paginator->items() as $product) {
+        //     $categoryId = $product->category_id;
+        //     $product->category_name = '';
 
-            if(!isset($productsByCategory[$categoryId])) {
-                // $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
+        //     if(!isset($productsByCategory[$categoryId])) {
+        //         // $category = Category::select('id', 'name')->where('id', $product->category_id)->first();
+        //         $productsByCategory[$categoryId] = [
+        //             'id' => $categoryId,
+        //             'name' => $product->category
+        //         ];
+        //     }
+            
+        //     $productsByCategory[$categoryId]['products'][] = $product;
+        // }
+
+        foreach ($categories as $category) {
+            $categoryId = $category->id;
+
+            $products = Food::type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->where('category_id', $categoryId)->take(5)->get();
+            if(count($products)) {
                 $productsByCategory[$categoryId] = [
                     'id' => $categoryId,
-                    'name' => $product->category
+                    'name' => $category->name
                 ];
+                
+                $productsByCategory[$categoryId]['products'] = $products;
             }
-            
-            $productsByCategory[$categoryId]['products'][] = $product;
         }
 
         $updatedList =[];
@@ -615,7 +629,7 @@ class VendorController extends Controller
         }
 
         return [
-            'total_size' => $paginator->total(),
+            'total_size' => count($updatedList),
             'limit' => $limit,
             'offset' => $offset,
             'products' => $updatedList
