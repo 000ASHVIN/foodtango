@@ -610,14 +610,14 @@ class VendorController extends Controller
             $categoryId = $category->id;
 
             $products = Food::type($type)->where('restaurant_id', $request['vendor']->restaurants[0]->id)->where('category_id', $categoryId)->take(5)->get();
-            if(count($products)) {
+            // if(count($products)) {
                 $productsByCategory[$categoryId] = [
                     'id' => $categoryId,
                     'name' => $category->name
                 ];
                 
                 $productsByCategory[$categoryId]['products'] = $products;
-            }
+            // }
         }
 
         $updatedList =[];
