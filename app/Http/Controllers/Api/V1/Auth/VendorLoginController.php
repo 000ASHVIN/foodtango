@@ -110,7 +110,7 @@ class VendorLoginController extends Controller
             }
             $vendor->auth_token = $token;
             $vendor?->save();
-            return response()->json(['token' => $token, 'zone_wise_topic'=> $vendor?->restaurants[0]?->zone?->restaurant_wise_topic], 200);
+            return response()->json(['token' => $token, 'zone_wise_topic'=> $vendor?->restaurants[0]?->zone?->restaurant_wise_topic, 'restaurant_id' =>(int) $restaurant?->id], 200);
         } else {
             $errors = [];
             array_push($errors, ['code' => 'auth-001', 'message' => 'Unauthorized.']);
