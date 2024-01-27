@@ -75,5 +75,6 @@ class Kernel extends HttpKernel
         'localization' => \App\Http\Middleware\LocalizationMiddleware::class,
         'subscription' => \App\Http\Middleware\Subscription::class,
         'react' => \App\Http\Middleware\ReactValid::class,
+        'verifyWebhookSignature' => \App\Http\Middleware\VerifyWebhookSignature::class,
     ];
 }

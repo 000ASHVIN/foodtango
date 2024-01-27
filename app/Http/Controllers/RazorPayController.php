@@ -10,6 +10,36 @@ use Razorpay\Api\Api;
 
 class RazorPayController extends Controller
 {
+    public function handleWebhook(Request $request)
+    {
+        $webhookSecret = "XvWHOSzwLVfgStBoQEw0I6rf";
+
+        $api = new Api(config('razor.razor_key'), config('razor.razor_secret'));
+
+        $attributes = array(
+            'razorpay_signature' => $request->header('X-Razorpay-Signature'),
+            'razorpay_event_id' => $request->header('X-Razorpay-Event-Id'),
+            'razorpay_webhook_secret' => $webhookSecret,
+            'webhook_body' => $request->getContent(),
+        );
+
+        try {
+            $api->utility->verifyWebhookSignature($attributes);
+            // Handle the webhook event
+            $event = json_decode($request->getContent(), true);
+            // Process the event as needed
+
+            error_log($event);
+            dd($event);
+
+            return response()->json(['success' => true], 200);
+        } catch (\Throwable $e) {
+            // Handle signature verification failure
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
+    }
+
+
     public function payWithRazorpay()
     {
         return view('razor-pay');

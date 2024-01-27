@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RazorPayController;
 
 /*
 |--------------------------------------------------------------------------
@@ -339,4 +340,6 @@ Route::group(['namespace' => 'Api\V1', 'middleware'=>['localization','react']], 
     Route::get('vehicle/extra_charge', 'ConfigController@extra_charge');
 
     Route::get('get-vehicles', 'ConfigController@get_vehicles');
+
+    Route::post('/webhooks/razorpay', [RazorpayWebhookController::class, 'handleWebhook'])->middleware('verifyWebhookSignature');
 });
